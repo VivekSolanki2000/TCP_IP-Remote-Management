@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     {
         cerr << "Usage:\n"
              << argv[0] << " -s            (for server)\n"
-             << argv[0] << " -c server_ip  (for client)" << endl;
+             << argv[0] << " -c server_ip  (for client) (port)" << endl;
         return 1;
     }
 

@@ -161,6 +161,8 @@ void NetworkSettings::runClient()
     while (true)
     {
         string message;
+        cout << CMDPROMPT;
+        cout.flush();     
         getline(cin, message);
 
         if (message == "quit")
