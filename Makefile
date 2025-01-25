@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -pthread
 TARGET = tcpapp
-SRCS = Main.cpp NetworkSettings.cpp
+SRCS = Main.cpp NetworkSettings.cpp History.cpp RemoteManagement.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 $(TARGET): $(OBJS)

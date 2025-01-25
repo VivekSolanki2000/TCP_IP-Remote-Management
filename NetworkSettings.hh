@@ -5,7 +5,8 @@
 #include <thread>
 #include "RemoteManagement.hh"
 
-#define CMDPROMPT ""RemoteManagement> ""
+#define CMDPROMPT "RemoteManagement> "
+
 class NetworkSettings {
 private:
     int sock;

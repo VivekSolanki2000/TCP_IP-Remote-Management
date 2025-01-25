@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <thread>
 #include "NetworkSettings.hh"
+#include "RemoteManagement.hh"
+#include "History.hh"
 
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
@@ -160,13 +162,33 @@ void NetworkSettings::runClient()
     char buffer[BUFFER_SIZE] = {0};
     while (true)
     {
-        string message;
         cout << CMDPROMPT;
-        cout.flush();     
-        getline(cin, message);
+        cout.flush(); 
 
-        if (message == "quit")
-            break;
+        // Read user input
+        string message = read_input();   
+
+        
+        // Check if input exceeds maximum allowed length
+        if (message.length() >= MAX_INPUT_SIZE - 1) {
+            cerr << "Error: Command line too long" << endl;
+            continue;
+        }
+
+        // Parse input into arguments
+        vector<string> args = parse_input(message);
+
+        // Skip empty input
+        if (args.empty()) {
+            continue;
+        }
+        add_to_history(message);
+
+        if (message == "exit")
+        {
+            exit(atexit(exitFun));
+        }
+
 
         send(sock, message.c_str(), message.length(), 0);
         memset(buffer, 0, BUFFER_SIZE);
