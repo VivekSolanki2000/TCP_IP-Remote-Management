@@ -248,3 +248,17 @@ void exitFun()
 {
     commandHistory.saveHistory();
 }
+
+void signal_handler(int signo)
+{
+    switch(signo)
+    {
+        case SIGINT:
+        case SIGTERM:
+        case SIGTSTP:
+        default:
+            cout << "\n" << CMDPROMPT;
+            cout.flush();
+            break;
+    }
+}

@@ -82,6 +82,7 @@ bool NetworkSettings::initializeAsServer()
     }
 
     cout << "Server listening on port " << PORT << endl;
+
     return true;
 }
 
@@ -146,6 +147,10 @@ bool NetworkSettings::initializeAsClient(const char *serverIP)
     }
 
     cout << "Connected to server" << endl;
+    // Set up signal handlers for SIGINT and SIGTERM
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGTSTP, signal_handler);
     return true;
 }
 
