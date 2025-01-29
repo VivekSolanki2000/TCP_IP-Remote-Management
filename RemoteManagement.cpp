@@ -173,7 +173,6 @@ void refreshLine(int cursor_pos)
     }
 }
 
-
 /**
  * @brief Adds a new command to the history.
  *
@@ -192,7 +191,6 @@ void add_to_history(const string &command)
     }
     history_index = commandHistory.size();
 }
-
 
 /**
  * @brief Parses the input string into a vector of arguments.
@@ -271,6 +269,21 @@ string expandArguments(const string &arg)
 void exitFun()
 {
     commandHistory.saveHistory();
+}
+
+void signal_handler(int signo)
+{
+    switch (signo)
+    {
+    case SIGINT:
+    case SIGTERM:
+    case SIGTSTP:
+    default:
+        cout << "\n"
+             << CMDPROMPT;
+        cout.flush();
+        break;
+    }
 }
 
 void sendResponse()
