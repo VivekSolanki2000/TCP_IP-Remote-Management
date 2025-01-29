@@ -7,87 +7,105 @@
 
 HistoryNode::HistoryNode() {}
 
-HistoryNode::HistoryNode(int num, string command) {
+HistoryNode::HistoryNode(int num, string command)
+{
     cnum = num;
     timestamp = getCurrentTime();
     cmd = command;
 }
 
-HistoryNode::HistoryNode(int num, string tstamp, string command) {
+HistoryNode::HistoryNode(int num, string tstamp, string command)
+{
     cnum = num;
     timestamp = tstamp;
     cmd = command;
 }
 
-string HistoryNode::getCurrentTime() {
+string HistoryNode::getCurrentTime()
+{
     time_t now = time(nullptr);
-    struct tm* localTime = localtime(&now);
-    
+    struct tm *localTime = localtime(&now);
+
     stringstream ss;
     ss << put_time(localTime, "%Y-%m-%d %H:%M:%S");
-    
+
     return ss.str();
 }
 
-History::History() : nextCommandNumber(1) {
+History::History() : nextCommandNumber(1)
+{
     historyFilePath = "./.Remotebash_history";
     loadHistory();
 }
 
-void History::addCommand(const string& cmd) {
+void History::addCommand(const string &cmd)
+{
     history.emplace_back(HistoryNode(nextCommandNumber, cmd));
     nextCommandNumber++;
 }
 
-string History::getCommand(int index) const {
-    if (index >= 0 && index < (int)history.size()) {
+string History::getCommand(int index) const
+{
+    if (index >= 0 && index < (int)history.size())
+    {
         return history[index].cmd;
     }
     return "";
 }
 
-int History::size() const {
+int History::size() const
+{
     return (int)history.size();
 }
 
-void History::clear() {
+void History::clear()
+{
     history.clear();
     nextCommandNumber = 1;
 }
 
-void History::eraseFirst() {
+void History::eraseFirst()
+{
     history.erase(history.begin());
 }
 
-void History::saveHistory() const {
+void History::saveHistory() const
+{
     ofstream file(historyFilePath);
-    if (file.is_open()) {
-        for (const auto& node : history) {
+    if (file.is_open())
+    {
+        for (const auto &node : history)
+        {
             file << node.cnum << " " << node.timestamp << '\t' << node.cmd << endl;
         }
         file.close();
-    } else {
+    }
+    else
+    {
         cerr << "Unable to open history file for writing." << endl;
     }
 }
 
-void History::loadHistory() {
+void History::loadHistory()
+{
     ifstream file(historyFilePath);
-    if (file.is_open()) {
+    if (file.is_open())
+    {
         history.clear();
         string line;
-        
-        while (getline(file, line)) {
+
+        while (getline(file, line))
+        {
             stringstream ss(line);
             int cnum;
             string timestamp;
             string cmd;
-            
+
             ss >> cnum;
             ss.ignore();
             getline(ss, timestamp, '\t');
             getline(ss, cmd);
-            
+
             history.emplace_back(HistoryNode(cnum, timestamp, cmd));
             nextCommandNumber = max(nextCommandNumber, cnum + 1);
         }
@@ -95,9 +113,10 @@ void History::loadHistory() {
     }
 }
 
-void History::display() const {
-    for (const auto& node : history) {
+void History::display() const
+{
+    for (const auto &node : history)
+    {
         cout << node.cnum << "  " << node.timestamp << " " << node.cmd << endl;
     }
 }
-

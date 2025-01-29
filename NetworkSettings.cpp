@@ -7,6 +7,7 @@
 #include "NetworkSettings.hh"
 #include "RemoteManagement.hh"
 #include "History.hh"
+#include "MessageHandle.hh"
 
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
@@ -23,20 +24,25 @@ NetworkSettings::NetworkSettings() : sock(0)
  *********************************************************************/
 void NetworkSettings::handleClient(int clientSocket)
 {
-    char buffer[BUFFER_SIZE] = {0};
+    MessageHeader incomingMessage;
+    response_t outgoingMessage;
+
     while (true)
     {
-        memset(buffer, 0, BUFFER_SIZE);
-        int valRead = read(clientSocket, buffer, BUFFER_SIZE);
+        recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
+        // int valRead = read(clientSocket, , sizeof(incomingMessage));
 
-        if (valRead <= 0)
-            break;
+        incomingMessage.printResponse();
+        outgoingMessage.setResponse(clientSocket);
+        // if (valRead <= 0)
+        //   break;
 
-        cout << "Message from client " << clientSocket << ": " << buffer << endl;
+        // do command operation
+
+        // create new thread to send response to client by reading buffer prepared of command result.
 
         // Send client a response
-        const char *response = "Message received";
-        send(clientSocket, response, strlen(response), 0);
+        send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
     }
     close(clientSocket);
 }
@@ -164,41 +170,47 @@ bool NetworkSettings::initializeAsClient(const char *serverIP)
  *********************************************************************/
 void NetworkSettings::runClient()
 {
-    char buffer[BUFFER_SIZE] = {0};
+    // char buffer[BUFFER_SIZE] = {0};
+
+    MessageHeader incomingMessage;
+    MessageHeader outgoingMessage;
+
     while (true)
     {
         cout << CMDPROMPT;
-        cout.flush(); 
+        cout.flush();
 
         // Read user input
-        string message = read_input();   
+        string messageStr = read_input();
 
-        
         // Check if input exceeds maximum allowed length
-        if (message.length() >= MAX_INPUT_SIZE - 1) {
+        if (messageStr.length() >= MAX_INPUT_SIZE - 1)
+        {
             cerr << "Error: Command line too long" << endl;
             continue;
         }
 
         // Parse input into arguments
-        vector<string> args = parse_input(message);
+        vector<string> args = parse_input(messageStr);
 
         // Skip empty input
-        if (args.empty()) {
+        if (args.empty())
+        {
             continue;
         }
-        add_to_history(message);
+        add_to_history(messageStr);
 
-        if (message == "exit")
+        if (messageStr == "exit")
         {
             exit(atexit(exitFun));
         }
 
+        // Parse Input str to send data to server
 
-        send(sock, message.c_str(), message.length(), 0);
-        memset(buffer, 0, BUFFER_SIZE);
-        read(sock, buffer, BUFFER_SIZE);
-        cout << "Server: " << buffer << endl;
+        outgoingMessage.setMessageHandlerInfo(args[0]);
+        // outgoingMessage.printResponse();
+
+        send(sock, &outgoingMessage, sizeof(outgoingMessage) + args[0].size(), 0);
     }
 }
 

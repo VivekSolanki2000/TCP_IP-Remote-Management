@@ -11,15 +11,19 @@
 #include <termios.h>
 #include <vector>
 #include <signal.h>
+#include <variant>
+#include <deque>
 
 using namespace std;
 class NetworkSettings;
 
 void refreshLine(int cursor_pos);
 string read_input();
-string expandArguments(const string& arg);
-vector<string> parse_input(const string& input);
+string expandArguments(const string &arg);
+vector<string> parse_input(const string &input);
 void signal_handler(int signo);
-void add_to_history(const string& command);
+void add_to_history(const string &command);
 void exitFun();
+void sendResponse();
+
 #endif

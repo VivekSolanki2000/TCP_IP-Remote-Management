@@ -1,18 +1,20 @@
 #include "RemoteManagement.hh"
 #include "History.hh"
 #include "NetworkSettings.hh"
+#include "MessageHandle.hh"
 // Global history object
 History commandHistory;
 int history_index = -1;
+std::deque<response_t> responseDeque;
 
-string read_input() 
+string read_input()
 {
     struct termios oldt, newt;
     string input;
     int cursor_pos = 0;
 
     // Save current terminal settings
-    if (tcgetattr(STDIN_FILENO, &oldt) != 0) 
+    if (tcgetattr(STDIN_FILENO, &oldt) != 0)
     {
         perror("tcgetattr");
         exit(EXIT_FAILURE);
@@ -21,26 +23,30 @@ string read_input()
     // Modify terminal settings for character-by-character input
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
-    if (tcsetattr(STDIN_FILENO, TCSANOW, &newt) != 0) {
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &newt) != 0)
+    {
         perror("tcsetattr");
         exit(EXIT_FAILURE);
     }
 
-    while (true) {
+    while (true)
+    {
         char ch;
-        if (read(STDIN_FILENO, &ch, 1) != 1) {
+        if (read(STDIN_FILENO, &ch, 1) != 1)
+        {
             perror("read");
             exit(EXIT_FAILURE);
         }
 
-        if (ch == '\n') 
-        {   // End of input
+        if (ch == '\n')
+        { // End of input
             cout << endl;
             break;
-        }  
-        else if (ch == 127) 
-        {   // Backspace
-            if (cursor_pos > 0) {
+        }
+        else if (ch == 127)
+        { // Backspace
+            if (cursor_pos > 0)
+            {
                 input.erase(cursor_pos - 1, 1);
                 cursor_pos--;
                 cout << "\b \b";
@@ -49,25 +55,26 @@ string read_input()
                 cout.flush();
                 cout << "\b";
                 cout.flush();
-                for (int i = cursor_pos; i < (int)input.size(); i++) 
+                for (int i = cursor_pos; i < (int)input.size(); i++)
                 {
                     cout << "\b";
                     cout.flush();
                 }
             }
-        } 
-        else if (ch == 27)  //ESC before Arrow key 
-        {   // Arrow keys
+        }
+        else if (ch == 27) // ESC before Arrow key
+        {                  // Arrow keys
             char seq[2];
-            if (read(STDIN_FILENO, &seq[0], 1) != 1 || read(STDIN_FILENO, &seq[1], 1) != 1) {
+            if (read(STDIN_FILENO, &seq[0], 1) != 1 || read(STDIN_FILENO, &seq[1], 1) != 1)
+            {
                 perror("read");
                 exit(EXIT_FAILURE);
             }
-            if (seq[0] == '[') 
+            if (seq[0] == '[')
             {
-                if (seq[1] == 'A') 
-                {   // Up arrow - previous command
-                    if (history_index > 0) 
+                if (seq[1] == 'A')
+                { // Up arrow - previous command
+                    if (history_index > 0)
                     {
                         history_index--;
                         refreshLine(cursor_pos);
@@ -76,10 +83,10 @@ string read_input()
                         cout << "\r" << CMDPROMPT << input;
                         cout.flush();
                     }
-                } 
-                else if (seq[1] == 'B') 
-                {   // Down arrow - next command
-                    if (history_index < commandHistory.size() - 1) 
+                }
+                else if (seq[1] == 'B')
+                { // Down arrow - next command
+                    if (history_index < commandHistory.size() - 1)
                     {
                         history_index++;
                         refreshLine(cursor_pos);
@@ -87,8 +94,8 @@ string read_input()
                         cursor_pos = input.length();
                         cout << "\r" << CMDPROMPT << input;
                         cout.flush();
-                    } 
-                    else 
+                    }
+                    else
                     {
                         history_index = commandHistory.size();
                         refreshLine(cursor_pos);
@@ -97,34 +104,35 @@ string read_input()
                         cout << "\r" << CMDPROMPT;
                         cout.flush();
                     }
-                } 
-                else if (seq[1] == 'C') 
-                {   // Right arrow
-                    if (cursor_pos < (int)input.size()) 
+                }
+                else if (seq[1] == 'C')
+                { // Right arrow
+                    if (cursor_pos < (int)input.size())
                     {
                         cout << input[cursor_pos];
                         cout.flush();
                         cursor_pos++;
                     }
-                } 
-                else if (seq[1] == 'D') 
-                {   // Left arrow
-                    if (cursor_pos > 0) {
+                }
+                else if (seq[1] == 'D')
+                { // Left arrow
+                    if (cursor_pos > 0)
+                    {
                         cout << "\b";
                         cout.flush();
                         cursor_pos--;
                     }
                 }
             }
-        } 
-        else 
+        }
+        else
         {
             // Regular character input
-            if (cursor_pos < (int)input.size()) 
+            if (cursor_pos < (int)input.size())
             {
                 input.insert(cursor_pos, 1, ch);
-            } 
-            else 
+            }
+            else
             {
                 input += ch;
             }
@@ -132,7 +140,7 @@ string read_input()
             cout << "\r" << CMDPROMPT << input;
             cout.flush();
 
-            for (int i = cursor_pos; i < (int)input.size(); i++) 
+            for (int i = cursor_pos; i < (int)input.size(); i++)
             {
                 cout << "\b";
                 cout.flush();
@@ -141,7 +149,7 @@ string read_input()
     }
 
     // Restore original terminal settings
-    if (tcsetattr(STDIN_FILENO, TCSANOW, &oldt) != 0) 
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &oldt) != 0)
     {
         perror("tcsetattr");
         exit(EXIT_FAILURE);
@@ -156,7 +164,7 @@ string read_input()
  *
  * @param cursor_pos The number of characters to move back and erase.
  */
-void refreshLine(int cursor_pos) 
+void refreshLine(int cursor_pos)
 {
     for (int i = cursor_pos; i; i--)
     {
@@ -171,10 +179,14 @@ void refreshLine(int cursor_pos)
  *
  * @param command The command string to add to history.
  */
-void add_to_history(const string& command) {
-    if (commandHistory.size() < HISTORY_SIZE) {
+void add_to_history(const string &command)
+{
+    if (commandHistory.size() < HISTORY_SIZE)
+    {
         commandHistory.addCommand(command);
-    } else {
+    }
+    else
+    {
         commandHistory.eraseFirst();
         commandHistory.addCommand(command);
     }
@@ -191,27 +203,37 @@ void add_to_history(const string& command) {
  * @param input The input string to parse.
  * @return vector<string> A vector of parsed arguments.
  */
-vector<string> parse_input(const string& input) {
+vector<string> parse_input(const string &input)
+{
 
     vector<string> args;
     string current_arg;
     bool in_quote = false;
     char quote_char = '\0';
 
-    for (char c : input) {
-        if (!in_quote && (c == '"' || c == '\'')) {
+    for (char c : input)
+    {
+        if (!in_quote && (c == '"' || c == '\''))
+        {
             in_quote = true;
             quote_char = c;
-        } else if (in_quote && c == quote_char) {
+        }
+        else if (in_quote && c == quote_char)
+        {
             in_quote = false;
             quote_char = '\0';
-        } else if (!in_quote && isspace(c)) {
-            if (!current_arg.empty()) {
+        }
+        else if (!in_quote && isspace(c))
+        {
+            if (!current_arg.empty())
+            {
                 args.push_back(expandArguments(current_arg));
                 current_arg.clear();
             }
-        } else {
-            if(quote_char)
+        }
+        else
+        {
+            if (quote_char)
             {
                 cout << "Error: Unclosed quote detected." << endl;
                 args.clear();
@@ -221,26 +243,28 @@ vector<string> parse_input(const string& input) {
         }
     }
 
-    if (!current_arg.empty()) {
+    if (!current_arg.empty())
+    {
         args.push_back(expandArguments(current_arg));
     }
 
-    if (args.size() >= MAX_INPUT_SIZE) {
+    if (args.size() >= MAX_INPUT_SIZE)
+    {
         cerr << "Error: Too many arguments\n";
     }
 
     return args;
 }
 
-
-string expandArguments(const string& arg) 
+string expandArguments(const string &arg)
 {
     string expanded_arg;
     size_t pos = 0;
-    while (pos < arg.length()) {
-            expanded_arg += arg[pos];
-            ++pos;
-        }
+    while (pos < arg.length())
+    {
+        expanded_arg += arg[pos];
+        ++pos;
+    }
     return expanded_arg;
 }
 
@@ -249,16 +273,13 @@ void exitFun()
     commandHistory.saveHistory();
 }
 
-void signal_handler(int signo)
+void sendResponse()
 {
-    switch(signo)
+    while (!responseDeque.empty())
     {
-        case SIGINT:
-        case SIGTERM:
-        case SIGTSTP:
-        default:
-            cout << "\n" << CMDPROMPT;
-            cout.flush();
-            break;
+        response_t responseToBeSent = responseDeque.front();
+        responseDeque.pop_front();
+
+        send(responseToBeSent.socket, &responseToBeSent, sizeof(responseToBeSent) + responseToBeSent.msg.size(), 0);
     }
 }

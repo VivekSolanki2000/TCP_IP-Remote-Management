@@ -26,6 +26,10 @@ int main(int argc, char *argv[])
             return 1;
 
         network.runServer();
+
+        thread sendResponseTh(sendResponse);
+        // To run thread in bqckground
+        sendResponseTh.detach();
     }
     else if (mode == "-c" && argc == 4)
     {
