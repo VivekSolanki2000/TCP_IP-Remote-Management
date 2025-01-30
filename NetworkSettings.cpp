@@ -8,7 +8,7 @@
 #include "RemoteManagement.hh"
 #include "History.hh"
 #include "MessageHandle.hh"
-
+extern deque<response_t> responseDeque;
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
 {
@@ -34,15 +34,13 @@ void NetworkSettings::handleClient(int clientSocket)
 
         incomingMessage.printResponse();
         outgoingMessage.setResponse(clientSocket);
-        // if (valRead <= 0)
-        //   break;
-
+        
         // do command operation
 
-        // create new thread to send response to client by reading buffer prepared of command result.
+        responseDeque.push_back(outgoingMessage);
 
         // Send client a response
-        send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
+        //send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
     }
     close(clientSocket);
 }

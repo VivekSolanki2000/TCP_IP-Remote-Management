@@ -40,7 +40,7 @@ typedef struct
     msgType_e msgType;
     int socket;
     int sequenceNum;
-    string msg;
+    char msg[MESSAGE_SIZE];
 
 public:
     void setResponse(int iSocket);
@@ -54,7 +54,7 @@ private:
     msgType_e msgType;
     command_e command;
     bool isPid;
-    variant<int, string> pidOrProccessNameVariant;
+    variant<int, array<char, MESSAGE_SIZE>> pidOrProccessNameVariant;
 
 public:
     MessageHeader();

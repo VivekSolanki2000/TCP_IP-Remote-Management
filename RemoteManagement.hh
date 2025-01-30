@@ -13,7 +13,11 @@
 #include <signal.h>
 #include <variant>
 #include <deque>
+#include <array>
+#include <algorithm>
 
+#define MESSAGE_SIZE 100
+#define CMD_SIZE 15
 using namespace std;
 class NetworkSettings;
 

@@ -46,7 +46,7 @@ void MessageHeader::setIsPis(bool iIsPid)
 void MessageHeader::setpidOrProccessName(int iPid, string iProcessName)
 {
     pidOrProccessNameVariant = iPid;
-    pidOrProccessNameVariant = iProcessName;
+ //   pidOrProccessNameVariant = iProcessName;
 }
 
 void MessageHeader::setMessageHandlerInfo(string msg)
@@ -55,11 +55,12 @@ void MessageHeader::setMessageHandlerInfo(string msg)
     this->msgType = MSG_TYPE_CMD;
     this->command = CMD_GET_PID;
     this->isPid = false;
-    // this->pidOrProccessNameVariant = 0;
-    this->pidOrProccessNameVariant = "" + msg;
-    cout << (get<string>(this->pidOrProccessNameVariant)) << endl;
-    // snprintf((char *)this->response, strlen((char *)iData), "%s", (char *)iData);
-    //  snprintf((char *)this->response, strlen((char *)iData), "%s", (char *)iData);
+
+    array<char, MESSAGE_SIZE> charArray{};
+    copy_n(msg.begin(), min(msg.length(), static_cast<size_t>(99)), charArray.data());
+    charArray[99] = '\0';
+
+    this->pidOrProccessNameVariant = charArray;
 }
 
 void MessageHeader::printResponse()
@@ -70,7 +71,9 @@ void MessageHeader::printResponse()
     cout << this->command << endl;
     cout << this->isPid << endl;
     // cout << (get<int>(this->pidOrProccessNameVariant)) << endl;
-    cout << (get<string>(this->pidOrProccessNameVariant)) << endl;
+    const auto& arr = std::get<std::array<char, MESSAGE_SIZE>>(pidOrProccessNameVariant);
+    cout << arr.data() << endl;
+    cout.flush();
 }
 
 void response_t::setResponse(int iSocket)
@@ -78,7 +81,8 @@ void response_t::setResponse(int iSocket)
     this->msgType = MSG_TYPE_RESPONSE;
     this->socket = iSocket;
     this->sequenceNum = 1;
-    this->msg = "Response from server" + to_string(this->sequenceNum);
+    string msg = "Response from server" + to_string(this->sequenceNum);
+    strcpy(this->msg,msg.c_str());
 }
 
 MessageHeader::~MessageHeader()

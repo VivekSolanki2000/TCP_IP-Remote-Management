@@ -5,7 +5,7 @@
 // Global history object
 History commandHistory;
 int history_index = -1;
-std::deque<response_t> responseDeque;
+deque<response_t> responseDeque;
 
 string read_input()
 {
@@ -293,6 +293,7 @@ void sendResponse()
         response_t responseToBeSent = responseDeque.front();
         responseDeque.pop_front();
 
-        send(responseToBeSent.socket, &responseToBeSent, sizeof(responseToBeSent) + responseToBeSent.msg.size(), 0);
+        send(responseToBeSent.socket, &responseToBeSent, sizeof(responseToBeSent), 0);
     }
 }
+
