@@ -7,7 +7,8 @@
 
 #define CMDPROMPT "RemoteManagement> "
 
-class NetworkSettings {
+class NetworkSettings
+{
 private:
     int sock;
     struct sockaddr_in address;
@@ -19,9 +20,10 @@ private:
 public:
     NetworkSettings();
     bool initializeAsServer();
-    bool initializeAsClient(const char* serverIP);
+    int initializeAsClient(const char *serverIP);
     void runServer();
     void runClient();
+    inline int getClientSocketId() { return sock; }
     ~NetworkSettings();
 };
 

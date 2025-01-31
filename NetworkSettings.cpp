@@ -8,7 +8,7 @@
 #include "RemoteManagement.hh"
 #include "History.hh"
 #include "MessageHandle.hh"
-extern deque<response_t> responseDeque;
+extern deque<MessageHeader> responseDeque;
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
 {
@@ -25,23 +25,24 @@ NetworkSettings::NetworkSettings() : sock(0)
 void NetworkSettings::handleClient(int clientSocket)
 {
     MessageHeader incomingMessage;
-    response_t outgoingMessage;
+    MessageHeader outgoingMessage;
 
     while (true)
     {
         recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
+
         // int valRead = read(clientSocket, , sizeof(incomingMessage));
 
-        incomingMessage.printResponse();
+        incomingMessage.printHeader();
+
         outgoingMessage.setResponse(clientSocket);
-        
+        // cout << "clientSocket :" << outgoingMessage.getSocketId() << endl;
+
         // do command operation
-
         responseDeque.push_back(outgoingMessage);
-
-        // Send client a response
-        //send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
+        // send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
     }
+    cout << "Errror " << endl;
     close(clientSocket);
 }
 
@@ -115,6 +116,11 @@ void NetworkSettings::runServer()
         cout << "New client connected: " << clientSocket << endl;
         // NOTE: emplace_back constructs the new element in place using the arguments provided. This avoids the extra copy or move operation required when using push_back.
         clientThreads.emplace_back(&NetworkSettings::handleClient, this, clientSocket);
+
+        thread sendResponseTh(sendResponse);
+        // To run thread in bqckground
+        // sendResponseTh.detach();
+        sendResponseTh.join();
     }
 }
 
@@ -127,7 +133,7 @@ void NetworkSettings::runServer()
  * @return            - bool
  * @Note              -
  *********************************************************************/
-bool NetworkSettings::initializeAsClient(const char *serverIP)
+int NetworkSettings::initializeAsClient(const char *serverIP)
 {
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -172,6 +178,7 @@ void NetworkSettings::runClient()
 
     MessageHeader incomingMessage;
     MessageHeader outgoingMessage;
+    thread receiveResponseTh(receiveResponse, sock);
 
     while (true)
     {
@@ -196,20 +203,24 @@ void NetworkSettings::runClient()
         {
             continue;
         }
+
         add_to_history(messageStr);
 
-        if (messageStr == "exit")
+        if (args[0] == "exit")
         {
             exit(atexit(exitFun));
+            break;
         }
-
-        // Parse Input str to send data to server
-
-        outgoingMessage.setMessageHandlerInfo(args[0]);
-        // outgoingMessage.printResponse();
-
-        send(sock, &outgoingMessage, sizeof(outgoingMessage) + args[0].size(), 0);
+        else
+        {
+            // Parse Input str to send data to server
+            if (outgoingMessage.parseArgumentAndPrepareCommand(args))
+            {
+                send(sock, &outgoingMessage, sizeof(outgoingMessage), 0);
+            }
+        }
     }
+    receiveResponseTh.join();
 }
 
 /* In Destructor De-initialise variables of class */
@@ -220,5 +231,6 @@ NetworkSettings::~NetworkSettings()
         if (thread.joinable())
             thread.join();
     }
+
     close(sock);
 }

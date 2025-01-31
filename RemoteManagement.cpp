@@ -2,10 +2,11 @@
 #include "History.hh"
 #include "NetworkSettings.hh"
 #include "MessageHandle.hh"
+
 // Global history object
 History commandHistory;
 int history_index = -1;
-deque<response_t> responseDeque;
+deque<MessageHeader> responseDeque;
 
 string read_input()
 {
@@ -288,12 +289,39 @@ void signal_handler(int signo)
 
 void sendResponse()
 {
-    while (!responseDeque.empty())
+    cout << "sendResponse " << endl;
+    while (true)
     {
-        response_t responseToBeSent = responseDeque.front();
-        responseDeque.pop_front();
+        if (!responseDeque.empty())
+        {
+            MessageHeader responseToBeSent = responseDeque.front();
+            responseDeque.pop_front();
 
-        send(responseToBeSent.socket, &responseToBeSent, sizeof(responseToBeSent), 0);
+            responseToBeSent.printResponse();
+
+            send(responseToBeSent.getSocketId(), &responseToBeSent, sizeof(responseToBeSent), 0);
+        }
     }
 }
 
+void receiveResponse(int iSocketId)
+{
+    MessageHeader incomingMessage;
+
+    cout << "receive Response Th" << endl;
+    size_t received_size = 0;
+    while (true)
+    {
+        received_size = recv(iSocketId, &incomingMessage, sizeof(incomingMessage), 0);
+        // If recv returns 0, client disconnected
+
+        cout << "received_size =" << received_size << endl;
+        // If the full message is received (based on expected message size)
+        if (received_size == sizeof(incomingMessage))
+        {
+            cout << " about to print response " << endl;
+            // Process the received message
+            incomingMessage.printResponse();
+        }
+    }
+}
