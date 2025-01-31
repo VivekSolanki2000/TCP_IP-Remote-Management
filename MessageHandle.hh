@@ -61,18 +61,18 @@ public:
     void setCommand(command_e iCommand);
     void setIsPis(bool isPid);
     void setpidOrProccessName(int iPis, string iProcessName);
+    void setMessageHandlerInfo(string msg);
+    void setResponse(int iSocket);
 
     void processIdentifier(const string &identifier);
     bool parseArgumentAndPrepareCommand(const std::vector<string> &args);
-    void setMessageHandlerInfo(string msg);
-    bool parseMessageHandleInfo();
+
+    inline int getSocketIdToSendResponse() { return this->response.socket; }
+    inline command_e getCommand() { return this->command; }
+
     bool checkIsPid();
-    inline int getSocketId() { return this->response.socket; }
-    inline int getMsgType() { return this->response.msgType; }
 
     void printHeader();
-
-    void setResponse(int iSocket);
     void printResponse();
 
     ~MessageHeader();

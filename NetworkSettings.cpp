@@ -26,17 +26,48 @@ void NetworkSettings::handleClient(int clientSocket)
 {
     MessageHeader incomingMessage;
     MessageHeader outgoingMessage;
+    command_e receivedCommand = CMD_MAX;
 
     while (true)
     {
         recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
 
-        // int valRead = read(clientSocket, , sizeof(incomingMessage));
-
         incomingMessage.printHeader();
+        receivedCommand = incomingMessage.getCommand();
+
+        switch (receivedCommand)
+        {
+        case CMD_GET_PID:
+        {
+            break;
+        }
+        case CMD_GET_MEMORY:
+        {
+            break;
+        }
+
+        case CMD_GET_CPU_USAGE:
+        {
+            break;
+        }
+
+        case CMD_GET_PORT_USED:
+        {
+            break;
+        }
+
+        case CMD_KILL_PROCESS:
+        {
+            break;
+        }
+
+        default:
+        {
+        }
+        }
 
         outgoingMessage.setResponse(clientSocket);
-        // cout << "clientSocket :" << outgoingMessage.getSocketId() << endl;
+        // cout << "clientSocket :" << outgoingMessage.getSocketIdToSendResponse() << endl;
 
         // do command operation
         responseDeque.push_back(outgoingMessage);

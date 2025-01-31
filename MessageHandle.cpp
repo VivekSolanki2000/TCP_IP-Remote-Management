@@ -14,13 +14,6 @@ bool MessageHeader::checkIsPid()
     return isPid;
 }
 
-bool MessageHeader::parseMessageHandleInfo()
-{
-    bool status = false;
-
-    return status;
-}
-
 void MessageHeader::setSelfInfo(appType_e iSelfInfo)
 {
     if (iSelfInfo == APPTYPE_SERVER || iSelfInfo == APPTYPE_CLIENT)

@@ -299,7 +299,7 @@ void sendResponse()
 
             responseToBeSent.printResponse();
 
-            send(responseToBeSent.getSocketId(), &responseToBeSent, sizeof(responseToBeSent), 0);
+            send(responseToBeSent.getSocketIdToSendResponse(), &responseToBeSent, sizeof(responseToBeSent), 0);
         }
     }
 }
