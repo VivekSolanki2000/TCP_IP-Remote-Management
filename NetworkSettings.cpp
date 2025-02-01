@@ -8,6 +8,8 @@
 #include "RemoteManagement.hh"
 #include "History.hh"
 #include "MessageHandle.hh"
+#include "ExecuteCommands.hh"
+
 extern deque<MessageHeader> responseDeque;
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
@@ -25,56 +27,15 @@ NetworkSettings::NetworkSettings() : sock(0)
 void NetworkSettings::handleClient(int clientSocket)
 {
     MessageHeader incomingMessage;
-    MessageHeader outgoingMessage;
-    command_e receivedCommand = CMD_MAX;
 
     while (true)
     {
         recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
 
         incomingMessage.printHeader();
-        receivedCommand = incomingMessage.getCommand();
-
-        switch (receivedCommand)
-        {
-        case CMD_GET_PID:
-        {
-            break;
-        }
-        case CMD_GET_MEMORY:
-        {
-            break;
-        }
-
-        case CMD_GET_CPU_USAGE:
-        {
-            break;
-        }
-
-        case CMD_GET_PORT_USED:
-        {
-            break;
-        }
-
-        case CMD_KILL_PROCESS:
-        {
-            break;
-        }
-
-        default:
-        {
-        }
-        }
-
-        outgoingMessage.setResponse(clientSocket);
-        // cout << "clientSocket :" << outgoingMessage.getSocketIdToSendResponse() << endl;
-
-        // do command operation
-        responseDeque.push_back(outgoingMessage);
-        // send(clientSocket, &outgoingMessage, sizeof(outgoingMessage), 0);
+        executeCmd(clientSocket, incomingMessage);
     }
-    cout << "Errror " << endl;
-    close(clientSocket);
+    
 }
 
 /*********************************************************************
@@ -150,9 +111,8 @@ void NetworkSettings::runServer()
 
         thread sendResponseTh(sendResponse);
         // To run thread in bqckground
-        // sendResponseTh.detach();
-        sendResponseTh.join();
-    }
+        sendResponseTh.detach();
+   }
 }
 
 /*********************************************************************

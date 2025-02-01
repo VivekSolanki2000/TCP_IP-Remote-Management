@@ -17,13 +17,16 @@ typedef enum
     APPTYPE_MAX,
 } appType_e;
 
+
+
 typedef enum
 {
-    CMD_GET_PID = 0,
+    CMD_GET_PROCESS = 0,
     CMD_GET_MEMORY,
     CMD_GET_CPU_USAGE,
     CMD_GET_PORT_USED,
     CMD_KILL_PROCESS,
+    CMD_EXIT,
     CMD_MAX,
 } command_e;
 
@@ -40,7 +43,7 @@ typedef struct
     msgType_e msgType;
     int socket;
     int sequenceNum;
-    char msg[MESSAGE_SIZE];
+    char msg[MESSAGE_SIZE+1];
 } response_t;
 
 struct MessageHeader
@@ -62,7 +65,7 @@ public:
     void setIsPis(bool isPid);
     void setpidOrProccessName(int iPis, string iProcessName);
     void setMessageHandlerInfo(string msg);
-    void setResponse(int iSocket);
+    void setResponse(appType_e type,int clientSocket, int sequenceNum,string resp);
 
     void processIdentifier(const string &identifier);
     bool parseArgumentAndPrepareCommand(const std::vector<string> &args);

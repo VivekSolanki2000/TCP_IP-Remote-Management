@@ -297,7 +297,7 @@ void sendResponse()
             MessageHeader responseToBeSent = responseDeque.front();
             responseDeque.pop_front();
 
-            responseToBeSent.printResponse();
+            //responseToBeSent.printResponse();
 
             send(responseToBeSent.getSocketIdToSendResponse(), &responseToBeSent, sizeof(responseToBeSent), 0);
         }
@@ -314,12 +314,10 @@ void receiveResponse(int iSocketId)
     {
         received_size = recv(iSocketId, &incomingMessage, sizeof(incomingMessage), 0);
         // If recv returns 0, client disconnected
-
-        cout << "received_size =" << received_size << endl;
+        
         // If the full message is received (based on expected message size)
         if (received_size == sizeof(incomingMessage))
         {
-            cout << " about to print response " << endl;
             // Process the received message
             incomingMessage.printResponse();
         }

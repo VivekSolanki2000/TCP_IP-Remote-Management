@@ -27,7 +27,7 @@ void MessageHeader::setMsgType(msgType_e iMsgType)
 
 void MessageHeader::setCommand(command_e iCommand)
 {
-    if (iCommand >= CMD_GET_PID && iCommand <= CMD_MAX)
+    if (iCommand >= CMD_GET_PROCESS && iCommand <= CMD_MAX)
         command = iCommand;
 }
 
@@ -58,7 +58,7 @@ void MessageHeader::setMessageHandlerInfo(string msg)
 {
     this->selfInfo = APPTYPE_CLIENT;
     this->msgType = MSG_TYPE_CMD;
-    this->command = CMD_GET_PID;
+    this->command = CMD_GET_PROCESS;
     this->isPid = false;
 
     array<char, MESSAGE_SIZE> charArray{};
@@ -75,7 +75,7 @@ void MessageHeader::printHeader()
     cout << "command: " << this->command << endl;
     cout << "isPid: " << this->isPid << endl;
 
-    if (this->isPid == 0 && this->command != CMD_GET_PID)
+    if (this->isPid == 0 && this->command != CMD_GET_PROCESS)
     {
         if (std::holds_alternative<std::array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant))
         {
@@ -93,23 +93,21 @@ void MessageHeader::printHeader()
     }
 }
 
-void MessageHeader::setResponse(int iSocket)
+void MessageHeader::setResponse(appType_e type,int clientSocket, int sequenceNum,string resp)
 {
-    this->selfInfo = APPTYPE_SERVER;
+    this->selfInfo = type;
     this->response.msgType = MSG_TYPE_RESPONSE;
-    this->response.socket = iSocket;
-    this->response.sequenceNum = 1;
-    string msg = "Response from server " + to_string(this->response.sequenceNum);
-    strcpy(this->response.msg, msg.c_str());
+    this->response.socket = clientSocket;
+    this->response.sequenceNum = sequenceNum;
+    strcpy(this->response.msg, resp.c_str());
 }
 
 void MessageHeader::printResponse()
 {
-    cout << "this->response.msgType : " << this->response.msgType << endl;
     if (this->response.msgType == msgType_e::MSG_TYPE_RESPONSE)
     {
-        cout << "sequenceNum : " << this->response.sequenceNum << endl;
-        cout << "mess : " << this->response.msg << endl;
+        cout << this->response.msg;
+        cout.flush();
     }
 }
 
@@ -147,10 +145,10 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const std::vector<string> &ar
     this->setSelfInfo(appType_e::APPTYPE_CLIENT);
     this->setMsgType(msgType_e::MSG_TYPE_CMD);
 
-    if (args[0] == "get-pid")
+    if (args[0] == "get-process")
     {
         // Set message type as CMD
-        this->setCommand(command_e::CMD_GET_PID);
+        this->setCommand(command_e::CMD_GET_PROCESS);
         returnStatus = true;
     }
     else if (args[0] == "get-meminfo" && !(argSize < 2))
