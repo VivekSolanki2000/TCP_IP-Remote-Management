@@ -93,7 +93,7 @@ string read_input()
                         refreshLine(cursor_pos);
                         input = commandHistory.getCommand(history_index);
                         cursor_pos = input.length();
-                        cout << "\r" << CMDPROMPT << input;
+                        cout << "\r" << CMDPROMPT << input; 
                         cout.flush();
                     }
                     else
@@ -289,7 +289,6 @@ void signal_handler(int signo)
 
 void sendResponse()
 {
-    cout << "sendResponse " << endl;
     while (true)
     {
         if (!responseDeque.empty())
@@ -308,7 +307,6 @@ void receiveResponse(int iSocketId)
 {
     MessageHeader incomingMessage;
 
-    cout << "receive Response Th" << endl;
     size_t received_size = 0;
     while (true)
     {

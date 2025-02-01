@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
 
     NetworkSettings network;
     string mode = argv[1];
-    int socketId = 0xFF;
 
     if (mode == "-s")
     {
@@ -30,8 +29,7 @@ int main(int argc, char *argv[])
     }
     else if (mode == "-c" && argc == 4)
     {
-        socketId = network.initializeAsClient(argv[2]);
-        if (socketId == -1)
+        if (!network.initializeAsClient(argv[2]))
             return 1;
         // To run thread in bqckground
         // receiveResponseTh.detach();

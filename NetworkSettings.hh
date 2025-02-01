@@ -20,7 +20,7 @@ private:
 public:
     NetworkSettings();
     bool initializeAsServer();
-    int initializeAsClient(const char *serverIP);
+    bool initializeAsClient(const char *serverIP);
     void runServer();
     void runClient();
     inline int getClientSocketId() { return sock; }

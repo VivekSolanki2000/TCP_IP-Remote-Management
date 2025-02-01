@@ -35,6 +35,8 @@ typedef enum
     MSG_TYPE_CMD = 0,
     MSG_TYPE_RESPONSE,
     MSG_TYPE_END_OF_RESPONSE,
+    MSG_HEARTBEAT,
+    MSG_HEARTBEAT_RESPONSE,
     MSG_TYPE_MAX,
 } msgType_e;
 

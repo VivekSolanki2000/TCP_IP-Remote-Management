@@ -11,6 +11,8 @@
 #include "ExecuteCommands.hh"
 
 extern deque<MessageHeader> responseDeque;
+extern History commandHistory;
+extern int history_index;
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
 {
@@ -124,7 +126,7 @@ void NetworkSettings::runServer()
  * @return            - bool
  * @Note              -
  *********************************************************************/
-int NetworkSettings::initializeAsClient(const char *serverIP)
+bool NetworkSettings::initializeAsClient(const char *serverIP)
 {
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -152,6 +154,7 @@ int NetworkSettings::initializeAsClient(const char *serverIP)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGTSTP, signal_handler);
+    history_index = commandHistory.size();
     return true;
 }
 
