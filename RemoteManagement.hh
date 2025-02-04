@@ -15,11 +15,21 @@
 #include <deque>
 #include <array>
 #include <algorithm>
+#include <mutex>
 
 #define MESSAGE_SIZE 100
 #define CMD_SIZE 15
 using namespace std;
 class NetworkSettings;
+
+typedef enum
+{
+    APPTYPE_SERVER = 0,
+    APPTYPE_CLIENT,
+    APPTYPE_MAX,
+} appType_e;
+
+
 
 void refreshLine(int cursor_pos);
 string read_input();

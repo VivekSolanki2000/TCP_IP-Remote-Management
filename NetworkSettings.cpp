@@ -9,7 +9,9 @@
 #include "History.hh"
 #include "MessageHandle.hh"
 #include "ExecuteCommands.hh"
+#include "NetworkValidator.hh"
 
+appType_e appType;
 extern deque<MessageHeader> responseDeque;
 extern History commandHistory;
 extern int history_index;
@@ -29,12 +31,20 @@ NetworkSettings::NetworkSettings() : sock(0)
 void NetworkSettings::handleClient(int clientSocket)
 {
     MessageHeader incomingMessage;
+    NetworkValidator validator(clientSocket);
+    validator.initHeartBeatTimer();
 
     while (true)
     {
-        recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
+        int bytesReceived = recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
+        // Check for timeout or error
+        if (bytesReceived <= 0) {  
+            cerr << "Connection Close by Client\n";
+            close(clientSocket);  // Close client socket
+            return;  // Exit the function
+        }
 
-        incomingMessage.printHeader();
+        //incomingMessage.printHeader();
         executeCmd(clientSocket, incomingMessage);
     }
     
@@ -110,10 +120,11 @@ void NetworkSettings::runServer()
         cout << "New client connected: " << clientSocket << endl;
         // NOTE: emplace_back constructs the new element in place using the arguments provided. This avoids the extra copy or move operation required when using push_back.
         clientThreads.emplace_back(&NetworkSettings::handleClient, this, clientSocket);
-
+        
         thread sendResponseTh(sendResponse);
         // To run thread in bqckground
         sendResponseTh.detach();
+
    }
 }
 
@@ -174,6 +185,10 @@ void NetworkSettings::runClient()
     MessageHeader outgoingMessage;
     thread receiveResponseTh(receiveResponse, sock);
 
+    // To run thread in bqckground
+    NetworkValidator validator(sock);
+    validator.StartValidator();
+
     while (true)
     {
         cout << CMDPROMPT;
@@ -202,6 +217,8 @@ void NetworkSettings::runClient()
 
         if (args[0] == "exit")
         {
+            validator.StopValidator();
+            close(sock);
             exit(atexit(exitFun));
             break;
         }
@@ -228,3 +245,5 @@ NetworkSettings::~NetworkSettings()
 
     close(sock);
 }
+
+

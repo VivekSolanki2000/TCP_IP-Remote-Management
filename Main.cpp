@@ -1,7 +1,8 @@
 
 #include "NetworkSettings.hh"
 #include "RemoteManagement.hh"
-
+#include "NetworkValidator.hh"
+extern appType_e appType;
 int main(int argc, char *argv[])
 {
     // To start application must receive the parameter to define behaviour of application as it can act as either server or client.
@@ -24,15 +25,16 @@ int main(int argc, char *argv[])
     {
         if (!network.initializeAsServer())
             return 1;
-
+        appType = APPTYPE_SERVER;
         network.runServer();
     }
     else if (mode == "-c" && argc == 4)
     {
         if (!network.initializeAsClient(argv[2]))
             return 1;
-        // To run thread in bqckground
-        // receiveResponseTh.detach();
+        
+        
+        appType = APPTYPE_CLIENT;
         network.runClient();
     }
     else

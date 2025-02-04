@@ -4,7 +4,7 @@
 #include <fstream>
 
 extern deque<MessageHeader> responseDeque;
-
+extern mutex mtx;
 void executeCmd(int clientSocket, MessageHeader in)
 {
         command_e receivedCommand = in.getCommand();
@@ -45,8 +45,19 @@ void executeCmd(int clientSocket, MessageHeader in)
                 break;
             }
 
+            case CMD_MAX:
+            { //HEARTBEAT or INVALID
+
+                if(MSG_HEARTBEAT == in.getMsgType())
+                {
+                    
+                }
+                break;
+            }
+
         }
-        prepareAndTx(clientSocket, resp);
+        if(CMD_MAX != receivedCommand)
+            prepareAndTx(clientSocket, resp);
 }
 
 string execGetProcess()
@@ -96,6 +107,7 @@ void prepareAndTx(int clientSocket,string resp)
         
         out.setResponse(APPTYPE_SERVER,clientSocket ,(i/MESSAGE_SIZE + 1), chunk);
         out.printResponse();
+        lock_guard<mutex> guard(mtx);
         responseDeque.push_back(out);
     }
 }

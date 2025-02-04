@@ -10,12 +10,6 @@
 #include <vector>
 #include "RemoteManagement.hh"
 
-typedef enum
-{
-    APPTYPE_SERVER = 0,
-    APPTYPE_CLIENT,
-    APPTYPE_MAX,
-} appType_e;
 
 
 
@@ -36,7 +30,6 @@ typedef enum
     MSG_TYPE_RESPONSE,
     MSG_TYPE_END_OF_RESPONSE,
     MSG_HEARTBEAT,
-    MSG_HEARTBEAT_RESPONSE,
     MSG_TYPE_MAX,
 } msgType_e;
 
@@ -73,12 +66,15 @@ public:
     bool parseArgumentAndPrepareCommand(const std::vector<string> &args);
 
     inline int getSocketIdToSendResponse() { return this->response.socket; }
+    inline msgType_e getMsgType() { return this->msgType; }
     inline command_e getCommand() { return this->command; }
 
     bool checkIsPid();
 
     void printHeader();
     void printResponse();
+
+    void MessageHeartBeat(appType_e app);
 
     ~MessageHeader();
 };

@@ -8,6 +8,12 @@ MessageHeader::MessageHeader()
     isPid = 0;
     pidOrProccessNameVariant = 0;
 }
+void MessageHeader::MessageHeartBeat(appType_e app)
+{
+    this->setSelfInfo(app);
+    this->setCommand(command_e::CMD_MAX);
+    this->setMsgType(msgType_e::MSG_HEARTBEAT);
+}
 
 bool MessageHeader::checkIsPid()
 {

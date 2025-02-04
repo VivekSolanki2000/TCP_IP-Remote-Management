@@ -7,6 +7,7 @@
 History commandHistory;
 int history_index = -1;
 deque<MessageHeader> responseDeque;
+mutex mtx;
 
 string read_input()
 {
@@ -270,6 +271,7 @@ string expandArguments(const string &arg)
 void exitFun()
 {
     commandHistory.saveHistory();
+    
 }
 
 void signal_handler(int signo)
@@ -291,13 +293,14 @@ void sendResponse()
 {
     while (true)
     {
+        lock_guard<mutex> guard(mtx);
         if (!responseDeque.empty())
         {
             MessageHeader responseToBeSent = responseDeque.front();
             responseDeque.pop_front();
 
             //responseToBeSent.printResponse();
-
+            cout << "----------------------------------SEND RESP--------------------\n";
             send(responseToBeSent.getSocketIdToSendResponse(), &responseToBeSent, sizeof(responseToBeSent), 0);
         }
     }
