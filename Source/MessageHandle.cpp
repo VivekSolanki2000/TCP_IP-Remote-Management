@@ -84,19 +84,19 @@ void MessageHeader::printHeader()
 
     if (this->isPid == 0 && this->command != CMD_GET_PROCESS)
     {
-        if (std::holds_alternative<std::array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant))
+        if (holds_alternative<array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant))
         {
-            const auto &arr = std::get<std::array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant);
-            std::cout << "Process Name: " << arr.data() << std::endl;
+            const auto &arr = get<array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant);
+            cout << "Process Name: " << arr.data() << endl;
         }
         else
         {
-            std::cout << "Variant holds an integer (PID): " << std::get<int>(this->pidOrProccessNameVariant) << std::endl;
+            cout << "Variant holds an integer (PID): " << get<int>(this->pidOrProccessNameVariant) << endl;
         }
     }
     else
     {
-        std::cout << "PID: " << std::get<int>(this->pidOrProccessNameVariant) << std::endl;
+        cout << "PID: " << get<int>(this->pidOrProccessNameVariant) << endl;
     }
 }
 
@@ -129,7 +129,7 @@ void MessageHeader::processIdentifier(const string &identifier)
     bool isPid = !identifier.empty() &&
                  identifier.length() < 8 &&
                  (identifier == "0" || identifier[0] != '0') &&
-                 std::all_of(identifier.begin(), identifier.end(), ::isdigit);
+                 all_of(identifier.begin(), identifier.end(), ::isdigit);
 
     this->setIsPis(isPid);
 
@@ -143,7 +143,7 @@ void MessageHeader::processIdentifier(const string &identifier)
     }
 }
 
-bool MessageHeader::parseArgumentAndPrepareCommand(const std::vector<string> &args)
+bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
 {
     bool returnStatus = false;
     int argSize = args.size();

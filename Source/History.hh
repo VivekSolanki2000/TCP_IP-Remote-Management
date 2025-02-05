@@ -13,27 +13,27 @@
 class HistoryNode {
 public:
     int cnum;
-    std::string timestamp;
-    std::string cmd;
+    string timestamp;
+    string cmd;
 
     HistoryNode();
-    HistoryNode(int num, std::string command);
-    HistoryNode(int num, std::string tstamp, std::string command);
+    HistoryNode(int num, string command);
+    HistoryNode(int num, string tstamp, string command);
 
 private:
-    std::string getCurrentTime();
+    string getCurrentTime();
 };
 
 class History {
 private:
-    std::vector<HistoryNode> history;
+    vector<HistoryNode> history;
     int nextCommandNumber;
-    std::string historyFilePath;
+    string historyFilePath;
 
 public:
     History();
-    void addCommand(const std::string& cmd);
-    std::string getCommand(int index) const;
+    void addCommand(const string& cmd);
+    string getCommand(int index) const;
     int size() const;
     void clear();
     void eraseFirst();

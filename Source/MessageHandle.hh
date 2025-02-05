@@ -43,7 +43,6 @@ typedef enum
 
 typedef struct
 {
-    //msgType_e msgType;
     int socket;
     int sequenceNum;
     char msg[MESSAGE_SIZE+1];
@@ -71,7 +70,7 @@ public:
     void setResponse(appType_e type,int clientSocket, int sequenceNum,string resp);
 
     void processIdentifier(const string &identifier);
-    bool parseArgumentAndPrepareCommand(const std::vector<string> &args);
+    bool parseArgumentAndPrepareCommand(const vector<string> &args);
 
     inline int getSocketIdToSendResponse() { return this->response.socket; }
     inline msgType_e getMsgType() { return this->msgType; }
