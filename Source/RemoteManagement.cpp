@@ -301,7 +301,6 @@ void sendResponse()
             responseDeque.pop_front();
 
             //responseToBeSent.printResponse();
-            cout << "----------------------------------SEND RESP--------------------\n";
             send(responseToBeSent.getSocketIdToSendResponse(), &responseToBeSent, sizeof(responseToBeSent), 0);
         }
     }
@@ -317,7 +316,6 @@ void sendRequest(int iSocketId)
             requestDeque.pop_front();
 
             //responseToBeSent.printResponse();
-            cout << "---------------------------------- SEND REQ --------------------\n";
             send(iSocketId, &requestToBeSent, sizeof(requestToBeSent), 0);
         }
     }
