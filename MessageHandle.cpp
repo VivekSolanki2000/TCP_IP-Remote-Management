@@ -8,6 +8,7 @@ MessageHeader::MessageHeader()
     isPid = 0;
     pidOrProccessNameVariant = 0;
 }
+
 void MessageHeader::MessageHeartBeat(appType_e app)
 {
     this->setSelfInfo(app);
@@ -102,7 +103,7 @@ void MessageHeader::printHeader()
 void MessageHeader::setResponse(appType_e type,int clientSocket, int sequenceNum,string resp)
 {
     this->selfInfo = type;
-    this->response.msgType = MSG_TYPE_RESPONSE;
+    this->msgType = MSG_TYPE_RESPONSE;
     this->response.socket = clientSocket;
     this->response.sequenceNum = sequenceNum;
     strcpy(this->response.msg, resp.c_str());
@@ -110,7 +111,7 @@ void MessageHeader::setResponse(appType_e type,int clientSocket, int sequenceNum
 
 void MessageHeader::printResponse()
 {
-    if (this->response.msgType == msgType_e::MSG_TYPE_RESPONSE)
+    if (this->msgType == msgType_e::MSG_TYPE_RESPONSE)
     {
         cout << this->response.msg;
         cout.flush();
@@ -183,7 +184,7 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const std::vector<string> &ar
     }
     else
     {
-        cout << "Invalid command, please provide command such as get [pid, meminfo, cpuinfo, kill] along with either pid or processname\n";
+        cout << "Invalid command, please provide command such as get-[process, meminfo, cpuinfo, kill] along with either pid or processname\n";
     }
 
     return returnStatus;

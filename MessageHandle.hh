@@ -10,32 +10,40 @@
 #include <vector>
 #include "RemoteManagement.hh"
 
+#define		ENUM(ENUM, STRING)		ENUM,
+#define		STRING(ENUM, STRING)	STRING,
 
+#define CMD_GENERATOR(ARG)                                              \
+    ARG(CMD_GET_PROCESS,"CMD_GET_PROCESS")                              \
+    ARG(CMD_GET_MEMORY,"CMD_GET_MEMORY")                                \
+    ARG(CMD_GET_CPU_USAGE,"CMD_GET_CPU_USAGE")                          \
+    ARG(CMD_GET_PORT_USED,"CMD_GET_PORT_USED")                          \
+    ARG(CMD_KILL_PROCESS,"CMD_KILL_PROCESS")                            \
+    ARG(CMD_EXIT,"CMD_EXIT")                                            \
+
+
+#define MSG_GENERATOR(ARG)                                              \
+    ARG(MSG_TYPE_CMD,"MSG_TYPE_CMD")                                    \
+    ARG(MSG_TYPE_RESPONSE,"MSG_TYPE_RESPONSE")                          \
+    ARG(MSG_TYPE_END_OF_RESPONSE,"MSG_TYPE_END_OF_RESPONSE")            \
+    ARG(MSG_HEARTBEAT,"MSG_HEARTBEAT")                                  \
 
 
 typedef enum
 {
-    CMD_GET_PROCESS = 0,
-    CMD_GET_MEMORY,
-    CMD_GET_CPU_USAGE,
-    CMD_GET_PORT_USED,
-    CMD_KILL_PROCESS,
-    CMD_EXIT,
+    CMD_GENERATOR(ENUM)
     CMD_MAX,
 } command_e;
 
 typedef enum
 {
-    MSG_TYPE_CMD = 0,
-    MSG_TYPE_RESPONSE,
-    MSG_TYPE_END_OF_RESPONSE,
-    MSG_HEARTBEAT,
+    MSG_GENERATOR(ENUM)
     MSG_TYPE_MAX,
 } msgType_e;
 
 typedef struct
 {
-    msgType_e msgType;
+    //msgType_e msgType;
     int socket;
     int sequenceNum;
     char msg[MESSAGE_SIZE+1];

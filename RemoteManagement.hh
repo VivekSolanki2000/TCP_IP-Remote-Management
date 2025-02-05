@@ -22,14 +22,18 @@
 using namespace std;
 class NetworkSettings;
 
+#define		ENUM(ENUM, STRING)		ENUM,
+#define		STRING(ENUM, STRING)	STRING,
+
+#define APPTYPE_GENERATOR(ARG)              \
+    ARG(APPTYPE_SERVER,"APPTYPE_SERVER")    \
+    ARG(APPTYPE_CLIENT,"APPTYPE_CLIENT")    
+
 typedef enum
 {
-    APPTYPE_SERVER = 0,
-    APPTYPE_CLIENT,
+    APPTYPE_GENERATOR(ENUM)
     APPTYPE_MAX,
 } appType_e;
-
-
 
 void refreshLine(int cursor_pos);
 string read_input();
