@@ -233,7 +233,6 @@ void NetworkSettings::runClient()
             if (outgoingMessage.parseArgumentAndPrepareCommand(args))
             {
                 requestDeque.emplace_back(outgoingMessage);
-                send(sock, &outgoingMessage, sizeof(outgoingMessage), 0);
             }
         }
     }

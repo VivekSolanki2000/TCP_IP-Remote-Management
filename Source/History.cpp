@@ -34,7 +34,7 @@ string HistoryNode::getCurrentTime()
 
 History::History() : nextCommandNumber(1)
 {
-    historyFilePath = "./.Remotebash_history";
+    historyFilePath = "../.Remotebash_history";
     loadHistory();
 }
 
