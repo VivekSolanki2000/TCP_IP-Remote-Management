@@ -13,8 +13,11 @@
 
 appType_e appType;
 extern deque<MessageHeader> responseDeque;
+extern deque<MessageHeader> requestDeque;
 extern History commandHistory;
 extern int history_index;
+
+
 /* In Constructor initialise variables of class */
 NetworkSettings::NetworkSettings() : sock(0)
 {
@@ -183,6 +186,8 @@ void NetworkSettings::runClient()
 
     MessageHeader incomingMessage;
     MessageHeader outgoingMessage;
+
+    thread sendRequestTh(sendRequest,sock);
     thread receiveResponseTh(receiveResponse, sock);
 
     // To run thread in bqckground
@@ -227,11 +232,14 @@ void NetworkSettings::runClient()
             // Parse Input str to send data to server
             if (outgoingMessage.parseArgumentAndPrepareCommand(args))
             {
+                requestDeque.emplace_back(outgoingMessage);
                 send(sock, &outgoingMessage, sizeof(outgoingMessage), 0);
             }
         }
     }
+    sendRequestTh.join();
     receiveResponseTh.join();
+
 }
 
 /* In Destructor De-initialise variables of class */

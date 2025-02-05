@@ -7,6 +7,7 @@
 History commandHistory;
 int history_index = -1;
 deque<MessageHeader> responseDeque;
+deque<MessageHeader> requestDeque;
 mutex mtx;
 
 string read_input()
@@ -302,6 +303,22 @@ void sendResponse()
             //responseToBeSent.printResponse();
             cout << "----------------------------------SEND RESP--------------------\n";
             send(responseToBeSent.getSocketIdToSendResponse(), &responseToBeSent, sizeof(responseToBeSent), 0);
+        }
+    }
+}
+
+void sendRequest(int iSocketId)
+{
+    while(true)
+    {
+        if(!requestDeque.empty())
+        {
+            MessageHeader requestToBeSent = requestDeque.front();
+            requestDeque.pop_front();
+
+            //responseToBeSent.printResponse();
+            cout << "---------------------------------- SEND REQ --------------------\n";
+            send(iSocketId, &requestToBeSent, sizeof(requestToBeSent), 0);
         }
     }
 }

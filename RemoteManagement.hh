@@ -43,6 +43,7 @@ void signal_handler(int signo);
 void add_to_history(const string &command);
 void exitFun();
 void sendResponse();
+void sendRequest(int iSocketId);
 void receiveResponse(int iSocketId);
 
 #endif
