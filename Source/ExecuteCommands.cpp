@@ -5,7 +5,7 @@
 
 extern deque<MessageHeader> responseDeque;
 extern mutex mtx;
-
+extern string msgStr[MSG_TYPE_MAX];
 /*********************************************************************
  * @fn      		  - executeCmd
  * @brief             - This function handles the different command execution 
@@ -18,12 +18,11 @@ void executeCmd(int clientSocket, MessageHeader in)
 {
         command_e receivedCommand = in.getCommand();
         string resp = "";
+        vector<int> pids;
+        
+
         switch (receivedCommand)
         {
-            default:
-            {
-
-            }
             case CMD_GET_PROCESS:
             {//get-process
                 resp = execGetProcess();
@@ -31,34 +30,56 @@ void executeCmd(int clientSocket, MessageHeader in)
             }
             case CMD_GET_MEMORY:
             {//get-mem
-                vector<int> pids;
                 if(in.checkIsPid())
                     pids.push_back(in.getProcessId());
                 else
                     pids = getPIDsByName(in.getProcessName()); 
-
                 resp = execGetMemoryUsage(pids);
                 break;
             }
 
             case CMD_GET_CPU_USAGE:
             {//get-cpu-usage
+                if(in.checkIsPid())
+                    pids.push_back(in.getProcessId());
+                else
+                    pids = getPIDsByName(in.getProcessName()); 
+                resp = execgetCPUUsage(pids);
                 break;
             }
 
             case CMD_GET_PORT_USED:
             {//get-ports-used
+                if(in.checkIsPid())
+                    pids.push_back(in.getProcessId());
+                else
+                    pids = getPIDsByName(in.getProcessName()); 
+                resp = execUsedPorts(pids);
                 break;
             }
 
             case CMD_KILL_PROCESS:
             {//kill
+                if(in.checkIsPid())
+                    pids.push_back(in.getProcessId());
+                else
+                    pids = getPIDsByName(in.getProcessName()); 
+                resp = execkillProcess(pids);
                 break;
             }
-            case CMD_EXIT:
-            {//exit
-
+            case CMD_RESTART_PROCESS:
+            {//restart-process
+                if(in.checkIsPid())
+                    pids.push_back(in.getProcessId());
+                else
+                    pids = getPIDsByName(in.getProcessName()); 
+                resp = execRestartProcess(pids);
                 break;
+            }
+
+            case CMD_EXIT:
+            {
+                //future-use
             }
 
             case CMD_MAX:
@@ -66,9 +87,14 @@ void executeCmd(int clientSocket, MessageHeader in)
 
                 if(MSG_HEARTBEAT == in.getMsgType())
                 {
-                    
+                    //future-use
                 }
                 break;
+            }
+            
+            default:
+            {
+                //future-use
             }
 
         }
@@ -86,11 +112,13 @@ void executeCmd(int clientSocket, MessageHeader in)
 string execGetProcess()
 {
     DIR* proc_dir = opendir("/proc");
+    string resp = msgStr[MSG_INVALID];
     if (!proc_dir) {
         cerr << "Failed to open /proc directory." << endl;
-        return NULL;
+        resp += "No process available\n";
+        return resp;
     }
-    string resp = "";
+    
     dirent* entry;
     
     while ((entry = readdir(proc_dir)) != nullptr) 
@@ -125,7 +153,7 @@ string execGetProcess()
  *********************************************************************/
 string execGetMemoryUsage(vector<int> pids)
 {
-    string resp = "";
+    string resp = msgStr[MSG_INVALID];
     for(int pid : pids)
     {
         string path = "/proc/" + to_string(pid) + "/status";
@@ -134,7 +162,8 @@ string execGetMemoryUsage(vector<int> pids)
         if (!status_file.is_open()) 
         {
             cerr << "Process with PID " << pid << " not found or access denied" << endl;
-            return NULL;
+            resp += "Process with PID" + to_string(pid) + " not found or access denied\n";
+            continue;
         }
 
         string line;
@@ -179,7 +208,7 @@ string execGetMemoryUsage(vector<int> pids)
             resp += "VmSize information not available\n";
             cout << "VmSize information not available" << endl;
         }
-        resp += "\n";
+        resp += "\n\0";
     }
     return resp;
 }
@@ -230,6 +259,248 @@ vector<int> getPIDsByName(const string& processName)
     return pids;
 }
 
+// Function to get CPU usage of a process by PID
+string execgetCPUUsage(vector<int> pids) {
+
+    string resp = msgStr[MSG_INVALID];
+    for(int pid:pids)
+    {
+        string statPath = "/proc/" + to_string(pid) + "/stat";
+        ifstream statFile(statPath);
+
+        if (!statFile.is_open()) {
+            cerr << "Failed to open /proc/" << pid << "/stat. Process may not exist or access denied." << endl;
+            resp += "PID[" + to_string(pid) + "]: Process may not exist or access denied.\n";
+            continue;
+        }
+
+        // Read the entire line from /proc/[PID]/stat
+        string line;
+        getline(statFile, line);
+        statFile.close();
+
+        // Extract process CPU times (utime and stime)
+        istringstream iss(line);
+        string token;
+        vector<string> tokens;
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        // utime (14th field) and stime (15th field) in /proc/[PID]/stat
+        long utime = stol(tokens[13]);
+        long stime = stol(tokens[14]);
+
+        // Total process CPU time (in clock ticks)
+        long processTime = utime + stime;
+
+        // Read total CPU time from /proc/stat
+        ifstream statGlobalFile("/proc/stat");
+        if (!statGlobalFile.is_open()) {
+            resp += "PID[" + to_string(pid) + "]: access denied.\n";
+            continue;;
+        }
+
+        string cpuLine;
+        getline(statGlobalFile, cpuLine);
+        statGlobalFile.close();
+
+        // Extract total CPU time from /proc/stat
+        istringstream cpuIss(cpuLine);
+        string cpuLabel;
+        cpuIss >> cpuLabel; // Skip the "cpu" label
+        long user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
+        cpuIss >> user >> nice >> system >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+
+        // Total system CPU time (in clock ticks)
+        long totalCPUTime = user + nice + system + idle + iowait + irq + softirq + steal;
+
+        // Calculate CPU usage percentage
+        static long prevProcessTime = 0;
+        static long prevTotalCPUTime = 0;
+
+        long processTimeDiff = processTime - prevProcessTime;
+        long totalCPUTimeDiff = totalCPUTime - prevTotalCPUTime;
+
+        prevProcessTime = processTime;
+        prevTotalCPUTime = totalCPUTime;
+
+        if (totalCPUTimeDiff == 0) {
+           resp += "Memory usage for PID " + to_string(pid) + ": " +  to_string(0.0) + "\n";
+        }
+        else{
+            double cpuUsage = 100.0 * processTimeDiff / totalCPUTimeDiff;
+            resp += "Memory usage for PID " + to_string(pid) + ": " +  to_string(cpuUsage) + "\n";
+        }
+    }
+    resp += "\0";
+    return resp;
+}
+
+// Function to convert a hexadecimal IP address to a human-readable format
+string hexToIP(const string& hex) {
+    if (hex.size() != 8) {
+        return "Invalid IP";
+    }
+
+    // Convert hex to 32-bit integer
+    unsigned int ipInt = stoul(hex, nullptr, 16);
+
+    // Convert to network byte order
+    ipInt = ntohl(ipInt);
+
+    // Convert to dotted-decimal notation
+    struct in_addr addr;
+    addr.s_addr = ipInt;
+    return string(inet_ntoa(addr));
+}
+
+// Function to convert a hexadecimal port to a decimal port
+int hexToPort(const string& hex) {
+    return stoul(hex, nullptr, 16);
+}
+
+// Function to get used ports by PID
+string execUsedPorts(vector<int> pids) 
+{
+    string resp = msgStr[MSG_INVALID];
+    for(int pid:pids)
+    {
+        string tcpPath = "/proc/" + to_string(pid) + "/net/tcp";
+        string udpPath = "/proc/" + to_string(pid) + "/net/udp";
+
+        cout << "Used ports for PID " << pid << ":" << endl;
+        resp += "Used ports for PID " + to_string(pid) + ":\n";
+        // Read TCP ports
+        ifstream tcpFile(tcpPath);
+        if (tcpFile.is_open()) {
+            string line;
+            getline(tcpFile, line); // Skip the header line
+            while (getline(tcpFile, line)) {
+                istringstream iss(line);
+                string token;
+                vector<string> tokens;
+                while (iss >> token) {
+                    tokens.push_back(token);
+                }
+
+                if (tokens.size() >= 10) {
+                    string localAddress = tokens[1];
+                    size_t colonPos = localAddress.find(':');
+                    string ipHex = localAddress.substr(0, colonPos);
+                    string portHex = localAddress.substr(colonPos + 1);
+
+                    string ip = hexToIP(ipHex);
+                    int port = hexToPort(portHex);
+
+                    cout << "TCP: " << ip << ":" << port << endl;
+                    resp += "TCP: " + ip + ":" + to_string(port) + "\n";
+                }
+            }
+            tcpFile.close();
+        } else {
+            cerr << "Failed to open " << tcpPath << endl;
+            resp += "No TCP port Present\n";
+        }
+
+        // Read UDP ports
+        ifstream udpFile(udpPath);
+        if (udpFile.is_open()) {
+            string line;
+            getline(udpFile, line); // Skip the header line
+            while (getline(udpFile, line)) {
+                istringstream iss(line);
+                string token;
+                vector<string> tokens;
+                while (iss >> token) {
+                    tokens.push_back(token);
+                }
+
+                if (tokens.size() >= 10) {
+                    string localAddress = tokens[1];
+                    size_t colonPos = localAddress.find(':');
+                    string ipHex = localAddress.substr(0, colonPos);
+                    string portHex = localAddress.substr(colonPos + 1);
+
+                    string ip = hexToIP(ipHex);
+                    int port = hexToPort(portHex);
+
+                    cout << "UDP: " << ip << ":" << port << endl;
+                    resp += "UDP: " + ip + ":" + to_string(port) + "\n";
+                }
+            }
+            udpFile.close();
+        } else {
+            cerr << "Failed to open " << udpPath << endl;
+            resp += "No UDP port Present\n";
+        }
+        resp += "\n";
+    }
+    return resp;
+}
+
+// Function to get the executable path of a process by PID
+string getExecutablePath(int pid) {
+    char path[PATH_MAX];
+    string exePath = "/proc/" + to_string(pid) + "/exe";
+    ssize_t len = readlink(exePath.c_str(), path, sizeof(path) - 1);
+    if (len != -1) {
+        path[len] = '\0';
+        return string(path);
+    } else {
+        cerr << "Failed to get executable path for PID " << pid << endl;
+        return "";
+    }
+}
+
+// Function to start a process by executable path
+bool startProcess(const string& executablePath) {
+    int result = system((executablePath + " &").c_str()); // Run in background
+    if (result == 0) {
+        cout << "Successfully restarted process: " << executablePath << endl;
+        return true;
+    } else {
+        cerr << "Failed to restart process: " << executablePath << endl;
+        return false;
+    }
+}
+
+string execRestartProcess(vector<int> pids) {
+    string resp = msgStr[MSG_INVALID];
+    for(int pid : pids)
+    {
+        string executablePath = getExecutablePath(pid);
+        if (executablePath.empty()) {
+            resp += "PID[" + to_string(pid) + "] :Restart not allowed\n";
+            continue;
+        }
+
+        if (kill(pid, SIGTERM) == 0) {
+            // Wait for the process to terminate
+            sleep(2); // Adjust the delay as needed
+            if(startProcess(executablePath))
+                resp += "PID[" + to_string(pid) + "] :Restart Success\n";
+            else
+                resp += "PID[" + to_string(pid) + "] :Restart Failed\n";
+        }
+    }
+    return resp;
+}
+
+string execkillProcess(vector<int> pids) {
+    string resp = msgStr[MSG_INVALID];
+    for(int pid : pids)
+    {
+        if (kill(pid, SIGTERM) == 0) {
+            cout << "Successfully sent signal " << SIGTERM << " to PID " << pid << endl;
+            resp += "Successfully Killed PID[" + to_string(pid) + "]\n";
+        } else {
+            cerr << "Failed to send signal " << SIGTERM << " to PID " << pid << endl;
+            resp += "Failed to Killed PID[" + to_string(pid) + "]\n";
+        }
+    }
+    return resp;
+}
 /*********************************************************************
  * @fn      		  - prepareAndTx()
  * @brief             - This function prepares the response according to 
@@ -241,10 +512,9 @@ vector<int> getPIDsByName(const string& processName)
  *********************************************************************/
 void prepareAndTx(int clientSocket,string resp)
 {
-    if("" == resp)
+    if(msgStr[MSG_INVALID] == resp)
     {
         cout << "No Responce " << endl;
-        return;
     }
 
     for(size_t i = 0; i < resp.length(); i += MESSAGE_SIZE) 
@@ -258,7 +528,7 @@ void prepareAndTx(int clientSocket,string resp)
         responseDeque.push_back(out);
     }
     MessageHeader endout;
-    endout.setResponse(APPTYPE_SERVER, MSG_TYPE_END_OF_RESPONSE,clientSocket,-1,NULL);
+    endout.setResponse(APPTYPE_SERVER, MSG_TYPE_END_OF_RESPONSE,clientSocket,-1, msgStr[MSG_INVALID]);
     responseDeque.push_back(endout);
 
 }

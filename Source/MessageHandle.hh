@@ -19,6 +19,7 @@
     ARG(CMD_GET_CPU_USAGE,"get-cpu-usage")                              \
     ARG(CMD_GET_PORT_USED,"get-ports-used")                             \
     ARG(CMD_KILL_PROCESS,"kill")                                        \
+    ARG(CMD_RESTART_PROCESS,"restart-process")                          \
     ARG(CMD_EXIT,"exit")                                                \
 
 

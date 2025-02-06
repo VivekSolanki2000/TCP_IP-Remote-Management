@@ -5,7 +5,7 @@ static string cmdStr[CMD_MAX] =
     CMD_GENERATOR(STRING)
 };
 
-static string msgStr[MSG_TYPE_MAX] = 
+string msgStr[MSG_TYPE_MAX] = 
 {
     MSG_GENERATOR(STRING)
 };
@@ -293,6 +293,12 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
     else if (args[0] == cmdStr[CMD_KILL_PROCESS] && !(argSize < 2))
     {
         this->setCommand(command_e::CMD_KILL_PROCESS);
+        this->processIdentifier(args[1]);
+        returnStatus = true;
+    }
+    else if (args[0] == cmdStr[CMD_RESTART_PROCESS] && !(argSize < 2))
+    {
+        this->setCommand(command_e::CMD_RESTART_PROCESS);
         this->processIdentifier(args[1]);
         returnStatus = true;
     }
