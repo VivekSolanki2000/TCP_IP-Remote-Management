@@ -14,12 +14,12 @@
 #define		STRING(ENUM, STRING)	STRING,
 
 #define CMD_GENERATOR(ARG)                                              \
-    ARG(CMD_GET_PROCESS,"CMD_GET_PROCESS")                              \
-    ARG(CMD_GET_MEMORY,"CMD_GET_MEMORY")                                \
-    ARG(CMD_GET_CPU_USAGE,"CMD_GET_CPU_USAGE")                          \
-    ARG(CMD_GET_PORT_USED,"CMD_GET_PORT_USED")                          \
-    ARG(CMD_KILL_PROCESS,"CMD_KILL_PROCESS")                            \
-    ARG(CMD_EXIT,"CMD_EXIT")                                            \
+    ARG(CMD_GET_PROCESS,"get-process")                                  \
+    ARG(CMD_GET_MEMORY,"get-mem")                                       \
+    ARG(CMD_GET_CPU_USAGE,"get-cpu-usage")                              \
+    ARG(CMD_GET_PORT_USED,"get-ports-used")                             \
+    ARG(CMD_KILL_PROCESS,"kill")                                        \
+    ARG(CMD_EXIT,"exit")                                                \
 
 
 #define MSG_GENERATOR(ARG)                                              \
@@ -27,6 +27,7 @@
     ARG(MSG_TYPE_RESPONSE,"MSG_TYPE_RESPONSE")                          \
     ARG(MSG_TYPE_END_OF_RESPONSE,"MSG_TYPE_END_OF_RESPONSE")            \
     ARG(MSG_HEARTBEAT,"MSG_HEARTBEAT")                                  \
+    ARG(MSG_INVALID,"")                                  \
 
 
 typedef enum

@@ -1,5 +1,15 @@
 #include "MessageHandle.hh"
 
+static string cmdStr[CMD_MAX] = 
+{
+    CMD_GENERATOR(STRING)
+};
+
+static string msgStr[MSG_TYPE_MAX] = 
+{
+    MSG_GENERATOR(STRING)
+};
+
 /* In Constructor initialise variables of class with default values*/
 MessageHeader::MessageHeader()
 {
@@ -189,6 +199,14 @@ void MessageHeader::setResponse(appType_e type, msgType_e mType, int clientSocke
     strcpy(this->response.msg, resp.c_str());
 }
 
+/*********************************************************************
+ * @fn      		  - printResponse()
+ * @brief             - This function used to print the value of response class
+ *                      members in the object
+ * @param[in]         - none
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::printResponse()
 {
     if (this->msgType == msgType_e::MSG_TYPE_RESPONSE)
@@ -248,31 +266,31 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
     this->setSelfInfo(appType_e::APPTYPE_CLIENT);
     this->setMsgType(msgType_e::MSG_TYPE_CMD);
 
-    if (args[0] == "get-process")
+    if (args[0] == cmdStr[CMD_GET_PROCESS])
     {
         // Set message type as CMD
         this->setCommand(command_e::CMD_GET_PROCESS);
         returnStatus = true;
     }
-    else if (args[0] == "get-meminfo" && !(argSize < 2))
+    else if (args[0] == cmdStr[CMD_GET_MEMORY] && !(argSize < 2))
     {
         this->setCommand(command_e::CMD_GET_MEMORY);
         this->processIdentifier(args[1]);
         returnStatus = true;
     }
-    else if (args[0] == "get-cpuinfo" && !(argSize < 2))
+    else if (args[0] == cmdStr[CMD_GET_CPU_USAGE] && !(argSize < 2))
     {
         this->setCommand(command_e::CMD_GET_CPU_USAGE);
         this->processIdentifier(args[1]);
         returnStatus = true;
     }
-    else if (args[0] == "get-portinfo" && !(argSize < 2))
+    else if (args[0] == cmdStr[CMD_GET_PORT_USED] && !(argSize < 2))
     {
         this->setCommand(command_e::CMD_GET_PORT_USED);
         this->processIdentifier(args[1]);
         returnStatus = true;
     }
-    else if (args[0] == "kill" && !(argSize < 2))
+    else if (args[0] == cmdStr[CMD_KILL_PROCESS] && !(argSize < 2))
     {
         this->setCommand(command_e::CMD_KILL_PROCESS);
         this->processIdentifier(args[1]);
@@ -287,12 +305,28 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
 }
 
 
+/*********************************************************************
+ * @fn      		  - getProcessName()
+ * @brief             - This function used to get the process name entered by the user
+ *                      to perform operations
+ * @param[in]         - none
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
 string MessageHeader::getProcessName()
 {
     const auto& charArray = get<array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant);
     return string(charArray.data());
 }
 
+/*********************************************************************
+ * @fn      		  - getProcessId()
+ * @brief             - This function used to get the process Id entered by the user
+ *                      to perform operations
+ * @param[in]         - none
+ * @return            - int
+ * @Note              -
+ *********************************************************************/
 int MessageHeader::getProcessId()
 {
     return get<int>(this->pidOrProccessNameVariant);
