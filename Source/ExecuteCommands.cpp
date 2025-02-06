@@ -5,6 +5,15 @@
 
 extern deque<MessageHeader> responseDeque;
 extern mutex mtx;
+
+/*********************************************************************
+ * @fn      		  - executeCmd
+ * @brief             - This function handles the different command execution 
+ *                      requested by client
+ * @param[in]         - int clientSocket, MessageHeader in
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void executeCmd(int clientSocket, MessageHeader in)
 {
         command_e receivedCommand = in.getCommand();
@@ -67,6 +76,13 @@ void executeCmd(int clientSocket, MessageHeader in)
             prepareAndTx(clientSocket, resp);
 }
 
+/*********************************************************************
+ * @fn      		  - execGetProcess()
+ * @brief             - This function reads the list of all the running process
+ * @param[in]         - none
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
 string execGetProcess()
 {
     DIR* proc_dir = opendir("/proc");
@@ -99,6 +115,14 @@ string execGetProcess()
     return resp;
 }
 
+/*********************************************************************
+ * @fn      		  - execGetMemoryUsage()
+ * @brief             - This function calculates the memory used by the pid given in
+ *                      argument
+ * @param[in]         - vector<int> pids
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
 string execGetMemoryUsage(vector<int> pids)
 {
     string resp = "";
@@ -107,7 +131,8 @@ string execGetMemoryUsage(vector<int> pids)
         string path = "/proc/" + to_string(pid) + "/status";
         ifstream status_file(path);
         
-        if (!status_file.is_open()) {
+        if (!status_file.is_open()) 
+        {
             cerr << "Process with PID " << pid << " not found or access denied" << endl;
             return NULL;
         }
@@ -115,32 +140,42 @@ string execGetMemoryUsage(vector<int> pids)
         string line;
         long vm_rss = -1, vm_size = -1;
 
-        while (getline(status_file, line)) {
-            if (line.compare(0, 6, "VmRSS:") == 0) {
+        while (getline(status_file, line)) 
+        {
+            if (line.compare(0, 6, "VmRSS:") == 0) 
+            {
                 stringstream ss(line.substr(6));
                 ss >> vm_rss;
-            } else if (line.compare(0, 7, "VmSize:") == 0) {
+            } 
+            else if (line.compare(0, 7, "VmSize:") == 0) 
+            {
                 stringstream ss(line.substr(7));
                 ss >> vm_size;
             }
         }
         resp += "Memory usage for PID " + to_string(pid) + ":\n";
         cout << "Memory usage for PID " << pid << ":" << endl;
-        if (vm_rss != -1) {
+        if (vm_rss != -1) 
+        {
             resp += "Physical Memory (VmRSS): " + to_string(vm_rss) + " KB (" + to_string(vm_rss / 1024.0) + " MB)\n";
             cout << "Physical Memory (VmRSS): " << vm_rss << " KB (" 
                 << vm_rss / 1024.0 << " MB)" << endl;
-        } else {
+        } 
+        else 
+        {
             resp += "VmRSS information not available\n";
             cout << "VmRSS information not available" << endl;
         }
 
-        if (vm_size != -1) {
+        if (vm_size != -1) 
+        {
             resp += "Virtual Memory (VmSize): " + to_string(vm_size) + " KB (" + to_string(vm_size / 1024.0) + " MB)\n";
             cout << "Virtual Memory (VmSize): " << vm_size << " KB (" 
                 << vm_size / 1024.0 << " MB)" << endl;
 
-        } else {
+        } 
+        else 
+        {
             resp += "VmSize information not available\n";
             cout << "VmSize information not available" << endl;
         }
@@ -149,28 +184,42 @@ string execGetMemoryUsage(vector<int> pids)
     return resp;
 }
 
-// Function to get PIDs associated with a process name
-vector<int> getPIDsByName(const string& processName) {
+
+/*********************************************************************
+ * @fn      		  - execGetMemoryUsage()
+ * @brief             - This function is used to get PIDs associated with a process name
+ *                      argument
+ * @param[in]         - const string& processName
+ * @return            - vector<int>
+ * @Note              -
+ *********************************************************************/
+vector<int> getPIDsByName(const string& processName) 
+{
     vector<int> pids;
     DIR* dir = opendir("/proc");
-    if (!dir) {
+    if (!dir) 
+    {
         cerr << "Failed to open /proc directory." << endl;
         return pids;
     }
 
     struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
+    while ((entry = readdir(dir)) != nullptr) 
+    {
         // Check if the entry is a directory and represents a PID
-        if(entry->d_type == DT_DIR && isdigit(entry->d_name[0])) {
+        if(entry->d_type == DT_DIR && isdigit(entry->d_name[0])) 
+        {
             int pid = stoi(entry->d_name);
 
             // Read the process name from /proc/[PID]/comm
             string commPath = string("/proc/") + entry->d_name + "/comm";
             ifstream commFile(commPath);
-            if (commFile.is_open()) {
+            if (commFile.is_open()) 
+            {
                 string name;
                 getline(commFile, name);
-                if (name == processName) {
+                if (name == processName) 
+                {
                     pids.push_back(pid);
                 }
                 commFile.close();
@@ -181,6 +230,15 @@ vector<int> getPIDsByName(const string& processName) {
     return pids;
 }
 
+/*********************************************************************
+ * @fn      		  - prepareAndTx()
+ * @brief             - This function prepares the response according to 
+ *                      MESSAGE_SIZE in cunks and adds into responseDeque to 
+ *                      send to client
+ * @param[in]         - int clientSocket,string resp
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void prepareAndTx(int clientSocket,string resp)
 {
     if("" == resp)

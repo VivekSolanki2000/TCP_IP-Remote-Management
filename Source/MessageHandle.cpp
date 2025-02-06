@@ -1,5 +1,6 @@
 #include "MessageHandle.hh"
 
+/* In Constructor initialise variables of class with default values*/
 MessageHeader::MessageHeader()
 {
     selfInfo = APPTYPE_MAX;
@@ -9,6 +10,14 @@ MessageHeader::MessageHeader()
     pidOrProccessNameVariant = 0;
 }
 
+/*********************************************************************
+ * @fn      		  - MessageHeartBeat()
+ * @brief             - This function used to set value for object used to 
+ *                      send hearbeat message to server
+ * @param[in]         - appType_e app
+ * @return            - None
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::MessageHeartBeat(appType_e app)
 {
     this->setSelfInfo(app);
@@ -16,33 +25,82 @@ void MessageHeader::MessageHeartBeat(appType_e app)
     this->setMsgType(msgType_e::MSG_HEARTBEAT);
 }
 
+/*********************************************************************
+ * @fn      		  - checkIsPid()
+ * @brief             - This function used to check the calue of isPid flag 
+ *                      on server side to parse the value of varient acordingly
+ * @param[in]         - none
+ * @return            - bool
+ * @Note              -
+ *********************************************************************/
 bool MessageHeader::checkIsPid()
 {
     return isPid;
 }
 
+/*********************************************************************
+ * @fn      		  - setSelfInfo()
+ * @brief             - This function used to validate and set value of 
+ *                      selfInfo in the object
+ * @param[in]         - appType_e iSelfInfo
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setSelfInfo(appType_e iSelfInfo)
 {
     if (iSelfInfo == APPTYPE_SERVER || iSelfInfo == APPTYPE_CLIENT)
         selfInfo = iSelfInfo;
 }
+
+/*********************************************************************
+ * @fn      		  - setMsgType()
+ * @brief             - This function used to validate and set value of 
+ *                      msgType in the object
+ * @param[in]         - msgType_e iMsgType
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setMsgType(msgType_e iMsgType)
 {
     if (iMsgType >= MSG_TYPE_CMD && iMsgType <= MSG_TYPE_MAX)
         msgType = iMsgType;
 }
 
+/*********************************************************************
+ * @fn      		  - setCommand()
+ * @brief             - This function used to validate and set value of 
+ *                      command in the object
+ * @param[in]         - command_e iCommand
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setCommand(command_e iCommand)
 {
     if (iCommand >= CMD_GET_PROCESS && iCommand <= CMD_MAX)
         command = iCommand;
 }
 
-void MessageHeader::setIsPis(bool iIsPid)
+/*********************************************************************
+ * @fn      		  - setIsPid()
+ * @brief             - This function used to  set value of 
+ *                      isPid in the object
+ * @param[in]         - bool iIsPid
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
+void MessageHeader::setIsPid(bool iIsPid)
 {
     isPid = iIsPid;
 }
 
+/*********************************************************************
+ * @fn      		  - setpidOrProccessName()
+ * @brief             - This function used to  set value of 
+ *                      isPid or process name in the object
+ * @param[in]         - int iPid, string iProcessName
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setpidOrProccessName(int iPid, string iProcessName)
 {
     if (iPid == -1)
@@ -59,6 +117,14 @@ void MessageHeader::setpidOrProccessName(int iPid, string iProcessName)
     }
 }
 
+/*********************************************************************
+ * @fn      		  - setMessageHandlerInfo()
+ * @brief             - This function used to  set value of 
+ *                      message in the object
+ * @param[in]         - string msg
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setMessageHandlerInfo(string msg)
 {
     this->selfInfo = APPTYPE_CLIENT;
@@ -73,6 +139,14 @@ void MessageHeader::setMessageHandlerInfo(string msg)
     this->pidOrProccessNameVariant = charArray;
 }
 
+/*********************************************************************
+ * @fn      		  - printHeader()
+ * @brief             - This function used to  print the value of 
+ *                      all members in the object
+ * @param[in]         - none
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::printHeader()
 {
     cout << "selfInfo: " << this->selfInfo << endl;
@@ -98,6 +172,14 @@ void MessageHeader::printHeader()
     }
 }
 
+/*********************************************************************
+ * @fn      		  - setResponse()
+ * @brief             - This function used to set value of MessageHeader and response class
+ *                      members in the object
+ * @param[in]         - appType_e type, msgType_e mType,int clientSocket, int sequenceNum,string resp
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::setResponse(appType_e type, msgType_e mType, int clientSocket, int sequenceNum,string resp)
 {
     this->selfInfo = type;
@@ -116,7 +198,15 @@ void MessageHeader::printResponse()
     }
 }
 
-// Helper function to process the identifier
+/*********************************************************************
+ * @fn      		  - processIdentifier()
+ * @brief             - This function used to identify the detail of process name
+ *                      whether that is process name or if process id and set the value of 
+ *                      variant accordingly
+ * @param[in]         - const string &identifier
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
 void MessageHeader::processIdentifier(const string &identifier)
 {
     // Consider it's a PID only if:
@@ -129,7 +219,7 @@ void MessageHeader::processIdentifier(const string &identifier)
                  (identifier == "0" || identifier[0] != '0') &&
                  all_of(identifier.begin(), identifier.end(), ::isdigit);
 
-    this->setIsPis(isPid);
+    this->setIsPid(isPid);
 
     if (isPid)
     {
@@ -141,6 +231,14 @@ void MessageHeader::processIdentifier(const string &identifier)
     }
 }
 
+/*********************************************************************
+ * @fn      		  - parseArgumentAndPrepareCommand()
+ * @brief             - This function used to parse the argument entered by the user
+ *                      and prepare message accordingly to sent to server
+ * @param[in]         - const vector<string> &args
+ * @return            - bool
+ * @Note              -
+ *********************************************************************/
 bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
 {
     bool returnStatus = false;
@@ -200,6 +298,7 @@ int MessageHeader::getProcessId()
     return get<int>(this->pidOrProccessNameVariant);
 }
 
+/* In Destructor De-initialise variables of class */
 MessageHeader::~MessageHeader()
 {
 }

@@ -10,6 +10,13 @@ deque<MessageHeader> responseDeque;
 deque<MessageHeader> requestDeque;
 mutex mtx;
 
+/*********************************************************************
+ * @fn      		  - read_input() 
+ * @brief             - This function reads the input from the user from terminal
+ * @param[in]         - none
+ * @return            - string
+ * @Note              - 
+ *********************************************************************/
 string read_input()
 {
     struct termios oldt, newt;
@@ -161,12 +168,13 @@ string read_input()
     return input;
 }
 
-/**
- * @brief Clears the current line by moving the cursor back and erasing characters.
- *
- *
- * @param cursor_pos The number of characters to move back and erase.
- */
+/*********************************************************************
+ * @fn      		  - refreshLine() 
+ * @brief             - This function Clears the current line by moving the cursor back and erasing characters.
+ * @param[in]         - int cursor_pos
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void refreshLine(int cursor_pos)
 {
     for (int i = cursor_pos; i; i--)
@@ -176,11 +184,13 @@ void refreshLine(int cursor_pos)
     }
 }
 
-/**
- * @brief Adds a new command to the history.
- *
- * @param command The command string to add to history.
- */
+/*********************************************************************
+ * @fn      		  - add_to_history() 
+ * @brief             - This function Adds a new command to the history.
+ * @param[in]         - const string &command
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void add_to_history(const string &command)
 {
     if (commandHistory.size() < HISTORY_SIZE)
@@ -195,15 +205,14 @@ void add_to_history(const string &command)
     history_index = commandHistory.size();
 }
 
-/**
- * @brief Parses the input string into a vector of arguments.
- *
- * This function splits the input string into separate arguments,
- * handling quoted strings appropriately.
- *
- * @param input The input string to parse.
- * @return vector<string> A vector of parsed arguments.
- */
+/*********************************************************************
+ * @fn      		  - add_to_history() 
+ * @brief             - This function splits the input string into separate arguments,
+ *                      handling quoted strings appropriately.
+ * @param[in]         - const string &input) The input string to parse.
+ * @return            - vector<string> A vector of parsed arguments.
+ * @Note              - 
+ *********************************************************************/
 vector<string> parse_input(const string &input)
 {
 
@@ -257,6 +266,14 @@ vector<string> parse_input(const string &input)
     return args;
 }
 
+/*********************************************************************
+ * @fn      		  - expandArguments() 
+ * @brief             - This function splits the input string into separate arguments,
+ *                      handling quoted strings appropriately.
+ * @param[in]         - const string &arg The input string args to parse.
+ * @return            - string
+ * @Note              - 
+ *********************************************************************/
 string expandArguments(const string &arg)
 {
     string expanded_arg;
@@ -269,12 +286,25 @@ string expandArguments(const string &arg)
     return expanded_arg;
 }
 
+/*********************************************************************
+ * @fn      		  - exitFun() 
+ * @brief             - This saves the history into history file
+ * @param[in]         - none
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void exitFun()
 {
     commandHistory.saveHistory();
-    
 }
 
+/*********************************************************************
+ * @fn      		  - signal_handler() 
+ * @brief             - This function handles the different signal actions entered by user
+ * @param[in]         - int signo
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void signal_handler(int signo)
 {
     switch (signo)
@@ -290,6 +320,14 @@ void signal_handler(int signo)
     }
 }
 
+/*********************************************************************
+ * @fn      		  - sendResponse() 
+ * @brief             - This function sends the response to client as soon as 
+ *                      response is available in responseDeque
+ * @param[in]         - none
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void sendResponse()
 {
     while (true)
@@ -306,6 +344,14 @@ void sendResponse()
     }
 }
 
+/*********************************************************************
+ * @fn      		  - sendResponse() 
+ * @brief             - This function sends the request to server as soon as 
+ *                      request is available in requestDeque
+ * @param[in]         - int iSocketId
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void sendRequest(int iSocketId)
 {
     while(true)
@@ -321,6 +367,13 @@ void sendRequest(int iSocketId)
     }
 }
 
+/*********************************************************************
+ * @fn      		  - receiveResponse() 
+ * @brief             - This function receives the response forom server as prints it
+ * @param[in]         - int iSocketId
+ * @return            - none
+ * @Note              - 
+ *********************************************************************/
 void receiveResponse(int iSocketId)
 {
     MessageHeader incomingMessage;

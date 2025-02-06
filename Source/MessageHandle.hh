@@ -64,7 +64,7 @@ public:
     void setSelfInfo(appType_e iSelfInfo);
     void setMsgType(msgType_e iMsgType);
     void setCommand(command_e iCommand);
-    void setIsPis(bool isPid);
+    void setIsPid(bool isPid);
     void setpidOrProccessName(int iPis, string iProcessName);
     void setMessageHandlerInfo(string msg);
     void setResponse(appType_e type, msgType_e mType, int clientSocket, int sequenceNum,string resp);
