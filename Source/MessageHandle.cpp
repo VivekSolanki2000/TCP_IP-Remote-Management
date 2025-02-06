@@ -47,7 +47,6 @@ void MessageHeader::setpidOrProccessName(int iPid, string iProcessName)
 {
     if (iPid == -1)
     {
-        cout << "test \n";
         array<char, MESSAGE_SIZE> charArray{};
         copy_n(iProcessName.begin(), min(iProcessName.length(), static_cast<size_t>(MESSAGE_SIZE - 1)), charArray.data());
         charArray[MESSAGE_SIZE - 1] = '\0';
@@ -56,7 +55,6 @@ void MessageHeader::setpidOrProccessName(int iPid, string iProcessName)
     }
     else
     {
-        cout << "test 2\n";
         pidOrProccessNameVariant = iPid;
     }
 }
@@ -100,10 +98,10 @@ void MessageHeader::printHeader()
     }
 }
 
-void MessageHeader::setResponse(appType_e type,int clientSocket, int sequenceNum,string resp)
+void MessageHeader::setResponse(appType_e type, msgType_e mType, int clientSocket, int sequenceNum,string resp)
 {
     this->selfInfo = type;
-    this->msgType = MSG_TYPE_RESPONSE;
+    this->msgType = mType;
     this->response.socket = clientSocket;
     this->response.sequenceNum = sequenceNum;
     strcpy(this->response.msg, resp.c_str());
@@ -188,6 +186,18 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
     }
 
     return returnStatus;
+}
+
+
+string MessageHeader::getProcessName()
+{
+    const auto& charArray = get<array<char, MESSAGE_SIZE>>(this->pidOrProccessNameVariant);
+    return string(charArray.data());
+}
+
+int MessageHeader::getProcessId()
+{
+    return get<int>(this->pidOrProccessNameVariant);
 }
 
 MessageHeader::~MessageHeader()

@@ -22,6 +22,13 @@ void executeCmd(int clientSocket, MessageHeader in)
             }
             case CMD_GET_MEMORY:
             {//get-mem
+                vector<int> pids;
+                if(in.checkIsPid())
+                    pids.push_back(in.getProcessId());
+                else
+                    pids = getPIDsByName(in.getProcessName()); 
+
+                resp = execGetMemoryUsage(pids);
                 break;
             }
 
@@ -92,6 +99,88 @@ string execGetProcess()
     return resp;
 }
 
+string execGetMemoryUsage(vector<int> pids)
+{
+    string resp = "";
+    for(int pid : pids)
+    {
+        string path = "/proc/" + to_string(pid) + "/status";
+        ifstream status_file(path);
+        
+        if (!status_file.is_open()) {
+            cerr << "Process with PID " << pid << " not found or access denied" << endl;
+            return NULL;
+        }
+
+        string line;
+        long vm_rss = -1, vm_size = -1;
+
+        while (getline(status_file, line)) {
+            if (line.compare(0, 6, "VmRSS:") == 0) {
+                stringstream ss(line.substr(6));
+                ss >> vm_rss;
+            } else if (line.compare(0, 7, "VmSize:") == 0) {
+                stringstream ss(line.substr(7));
+                ss >> vm_size;
+            }
+        }
+        resp += "Memory usage for PID " + to_string(pid) + ":\n";
+        cout << "Memory usage for PID " << pid << ":" << endl;
+        if (vm_rss != -1) {
+            resp += "Physical Memory (VmRSS): " + to_string(vm_rss) + " KB (" + to_string(vm_rss / 1024.0) + " MB)\n";
+            cout << "Physical Memory (VmRSS): " << vm_rss << " KB (" 
+                << vm_rss / 1024.0 << " MB)" << endl;
+        } else {
+            resp += "VmRSS information not available\n";
+            cout << "VmRSS information not available" << endl;
+        }
+
+        if (vm_size != -1) {
+            resp += "Virtual Memory (VmSize): " + to_string(vm_size) + " KB (" + to_string(vm_size / 1024.0) + " MB)\n";
+            cout << "Virtual Memory (VmSize): " << vm_size << " KB (" 
+                << vm_size / 1024.0 << " MB)" << endl;
+
+        } else {
+            resp += "VmSize information not available\n";
+            cout << "VmSize information not available" << endl;
+        }
+        resp += "\n";
+    }
+    return resp;
+}
+
+// Function to get PIDs associated with a process name
+vector<int> getPIDsByName(const string& processName) {
+    vector<int> pids;
+    DIR* dir = opendir("/proc");
+    if (!dir) {
+        cerr << "Failed to open /proc directory." << endl;
+        return pids;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        // Check if the entry is a directory and represents a PID
+        if(entry->d_type == DT_DIR && isdigit(entry->d_name[0])) {
+            int pid = stoi(entry->d_name);
+
+            // Read the process name from /proc/[PID]/comm
+            string commPath = string("/proc/") + entry->d_name + "/comm";
+            ifstream commFile(commPath);
+            if (commFile.is_open()) {
+                string name;
+                getline(commFile, name);
+                if (name == processName) {
+                    pids.push_back(pid);
+                }
+                commFile.close();
+            }
+        }
+    }
+    closedir(dir);
+    return pids;
+}
+
 void prepareAndTx(int clientSocket,string resp)
 {
     if("" == resp)
@@ -105,12 +194,13 @@ void prepareAndTx(int clientSocket,string resp)
         MessageHeader out;
         string chunk = resp.substr(i, MESSAGE_SIZE);
         
-        out.setResponse(APPTYPE_SERVER,clientSocket ,(i/MESSAGE_SIZE + 1), chunk);
-        out.printResponse();
+        out.setResponse(APPTYPE_SERVER, MSG_TYPE_RESPONSE, clientSocket ,(i/MESSAGE_SIZE + 1), chunk);
+        //out.printResponse();
         lock_guard<mutex> guard(mtx);
         responseDeque.push_back(out);
     }
-    MessageHeader out;
-     out.setResponse(APPTYPE_SERVER,clientSocket ,, chunk);
+    MessageHeader endout;
+    endout.setResponse(APPTYPE_SERVER, MSG_TYPE_END_OF_RESPONSE,clientSocket,-1,NULL);
+    responseDeque.push_back(endout);
 
 }

@@ -67,7 +67,7 @@ public:
     void setIsPis(bool isPid);
     void setpidOrProccessName(int iPis, string iProcessName);
     void setMessageHandlerInfo(string msg);
-    void setResponse(appType_e type,int clientSocket, int sequenceNum,string resp);
+    void setResponse(appType_e type, msgType_e mType, int clientSocket, int sequenceNum,string resp);
 
     void processIdentifier(const string &identifier);
     bool parseArgumentAndPrepareCommand(const vector<string> &args);
@@ -75,13 +75,14 @@ public:
     inline int getSocketIdToSendResponse() { return this->response.socket; }
     inline msgType_e getMsgType() { return this->msgType; }
     inline command_e getCommand() { return this->command; }
-
     bool checkIsPid();
 
     void printHeader();
     void printResponse();
 
     void MessageHeartBeat(appType_e app);
+    string getProcessName();
+    int getProcessId();
 
     ~MessageHeader();
 };
