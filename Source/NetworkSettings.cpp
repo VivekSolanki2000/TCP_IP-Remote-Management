@@ -182,8 +182,6 @@ bool NetworkSettings::initializeAsClient(const char *serverIP)
  *********************************************************************/
 void NetworkSettings::runClient()
 {
-    // char buffer[BUFFER_SIZE] = {0};
-
     MessageHeader incomingMessage;
     MessageHeader outgoingMessage;
 

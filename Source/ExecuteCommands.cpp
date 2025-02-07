@@ -20,7 +20,14 @@ void executeCmd(int clientSocket, MessageHeader in)
         command_e receivedCommand = in.getCommand();
         string resp = "";
         vector<int> pids;
-        
+
+        if(cmdHasPID(receivedCommand))
+        {
+            if(in.checkIsPid())
+                pids.push_back(in.getProcessId());
+            else
+                pids = getPIDsByName(in.getProcessName()); 
+        }
 
         switch (receivedCommand)
         {
@@ -31,49 +38,29 @@ void executeCmd(int clientSocket, MessageHeader in)
             }
             case CMD_GET_MEMORY:
             {//get-mem
-                if(in.checkIsPid())
-                    pids.push_back(in.getProcessId());
-                else
-                    pids = getPIDsByName(in.getProcessName()); 
                 resp = execGetMemoryUsage(pids);
                 break;
             }
 
             case CMD_GET_CPU_USAGE:
             {//get-cpu-usage
-                if(in.checkIsPid())
-                    pids.push_back(in.getProcessId());
-                else
-                    pids = getPIDsByName(in.getProcessName()); 
                 resp = execgetCPUUsage(pids);
                 break;
             }
 
             case CMD_GET_PORT_USED:
             {//get-ports-used
-                if(in.checkIsPid())
-                    pids.push_back(in.getProcessId());
-                else
-                    pids = getPIDsByName(in.getProcessName()); 
                 resp = execUsedPorts(pids);
                 break;
             }
 
             case CMD_KILL_PROCESS:
             {//kill
-                if(in.checkIsPid())
-                    pids.push_back(in.getProcessId());
-                else
-                    pids = getPIDsByName(in.getProcessName()); 
                 resp = execkillProcess(pids);
                 break;
             }
             case CMD_RESTART_PROCESS:
             {//restart-process
-                if(in.checkIsPid())
-                    pids.push_back(in.getProcessId());
-                else
-                    pids = getPIDsByName(in.getProcessName()); 
                 resp = execRestartProcess(pids);
                 break;
             }
@@ -624,4 +611,19 @@ void prepareAndTx(int clientSocket,string resp)
     MessageHeader endout;
     endout.setResponse(APPTYPE_SERVER, MSG_TYPE_END_OF_RESPONSE,clientSocket,-1, msgStr[MSG_INVALID]);
     responseDeque.push_back(endout);
+}
+
+
+bool cmdHasPID(int receivedCommand)
+{
+     switch (receivedCommand)
+    {
+        case CMD_GET_MEMORY:
+        case CMD_GET_CPU_USAGE:
+        case CMD_GET_PORT_USED:
+        case CMD_KILL_PROCESS:
+        case CMD_RESTART_PROCESS:
+            return true;
+    }
+    return false;
 }
