@@ -6,6 +6,7 @@
 extern deque<MessageHeader> responseDeque;
 extern mutex mtx;
 extern string msgStr[MSG_TYPE_MAX];
+
 /*********************************************************************
  * @fn      		  - executeCmd
  * @brief             - This function handles the different command execution 
@@ -98,6 +99,7 @@ void executeCmd(int clientSocket, MessageHeader in)
             }
 
         }
+
         if(CMD_MAX != receivedCommand)
             prepareAndTx(clientSocket, resp);
 }
@@ -215,9 +217,9 @@ string execGetMemoryUsage(vector<int> pids)
 
 
 /*********************************************************************
- * @fn      		  - execGetMemoryUsage()
- * @brief             - This function is used to get PIDs associated with a process name
- *                      argument
+ * @fn      		  - getPIDsByName()
+ * @brief             - This function is used to get PIDs associated 
+ *                      with a process name*                     
  * @param[in]         - const string& processName
  * @return            - vector<int>
  * @Note              -
@@ -259,8 +261,16 @@ vector<int> getPIDsByName(const string& processName)
     return pids;
 }
 
-// Function to get CPU usage of a process by PID
-string execgetCPUUsage(vector<int> pids) {
+/*********************************************************************
+ * @fn      		  - execgetCPUUsage()
+ * @brief             - This function is used to get CPU 
+ *                      usage of a process by PID
+ * @param[in]         - vector<int> pids
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
+string execgetCPUUsage(vector<int> pids) 
+{
 
     string resp = msgStr[MSG_INVALID];
     for(int pid:pids)
@@ -268,7 +278,8 @@ string execgetCPUUsage(vector<int> pids) {
         string statPath = "/proc/" + to_string(pid) + "/stat";
         ifstream statFile(statPath);
 
-        if (!statFile.is_open()) {
+        if (!statFile.is_open()) 
+        {
             cerr << "Failed to open /proc/" << pid << "/stat. Process may not exist or access denied." << endl;
             resp += "PID[" + to_string(pid) + "]: Process may not exist or access denied.\n";
             continue;
@@ -283,7 +294,8 @@ string execgetCPUUsage(vector<int> pids) {
         istringstream iss(line);
         string token;
         vector<string> tokens;
-        while (iss >> token) {
+        while (iss >> token) 
+        {
             tokens.push_back(token);
         }
 
@@ -296,7 +308,8 @@ string execgetCPUUsage(vector<int> pids) {
 
         // Read total CPU time from /proc/stat
         ifstream statGlobalFile("/proc/stat");
-        if (!statGlobalFile.is_open()) {
+        if (!statGlobalFile.is_open()) 
+        {
             resp += "PID[" + to_string(pid) + "]: access denied.\n";
             continue;;
         }
@@ -325,10 +338,12 @@ string execgetCPUUsage(vector<int> pids) {
         prevProcessTime = processTime;
         prevTotalCPUTime = totalCPUTime;
 
-        if (totalCPUTimeDiff == 0) {
+        if (totalCPUTimeDiff == 0) 
+        {
            resp += "Memory usage for PID " + to_string(pid) + ": " +  to_string(0.0) + "\n";
         }
-        else{
+        else
+        {
             double cpuUsage = 100.0 * processTimeDiff / totalCPUTimeDiff;
             resp += "Memory usage for PID " + to_string(pid) + ": " +  to_string(cpuUsage) + "\n";
         }
@@ -337,9 +352,18 @@ string execgetCPUUsage(vector<int> pids) {
     return resp;
 }
 
-// Function to convert a hexadecimal IP address to a human-readable format
-string hexToIP(const string& hex) {
-    if (hex.size() != 8) {
+/*********************************************************************
+ * @fn      		  - getPIDsByName()
+ * @brief             - This function is used to convert a hexadecimal
+ *                      IP address to a human-readable format
+ * @param[in]         - const string& hex
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
+string hexToIP(const string& hex) 
+{
+    if (hex.size() != 8) 
+    {
         return "Invalid IP";
     }
 
@@ -355,12 +379,27 @@ string hexToIP(const string& hex) {
     return string(inet_ntoa(addr));
 }
 
-// Function to convert a hexadecimal port to a decimal port
-int hexToPort(const string& hex) {
+/*********************************************************************
+ * @fn      		  - hexToPort()
+ * @brief             - This function is used to convert a hexadecimal 
+ *                      port to a decimal port
+ * @param[in]         - const string& hex
+ * @return            - int
+ * @Note              -
+ *********************************************************************/
+int hexToPort(const string& hex) 
+{
     return stoul(hex, nullptr, 16);
 }
 
-// Function to get used ports by PID
+/*********************************************************************
+ * @fn      		  - execUsedPorts()
+ * @brief             - This function is used to get the ports used  
+ *                      by process associated with a PID
+ * @param[in]         - vector<int> pids
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
 string execUsedPorts(vector<int> pids) 
 {
     string resp = msgStr[MSG_INVALID];
@@ -373,18 +412,22 @@ string execUsedPorts(vector<int> pids)
         resp += "Used ports for PID " + to_string(pid) + ":\n";
         // Read TCP ports
         ifstream tcpFile(tcpPath);
-        if (tcpFile.is_open()) {
+        if (tcpFile.is_open()) 
+        {
             string line;
             getline(tcpFile, line); // Skip the header line
-            while (getline(tcpFile, line)) {
+            while (getline(tcpFile, line)) 
+            {
                 istringstream iss(line);
                 string token;
                 vector<string> tokens;
-                while (iss >> token) {
+                while (iss >> token) 
+                {
                     tokens.push_back(token);
                 }
 
-                if (tokens.size() >= 10) {
+                if (tokens.size() >= 10) 
+                {
                     string localAddress = tokens[1];
                     size_t colonPos = localAddress.find(':');
                     string ipHex = localAddress.substr(0, colonPos);
@@ -398,25 +441,31 @@ string execUsedPorts(vector<int> pids)
                 }
             }
             tcpFile.close();
-        } else {
+        }
+        else 
+        {
             cerr << "Failed to open " << tcpPath << endl;
             resp += "No TCP port Present\n";
         }
 
         // Read UDP ports
         ifstream udpFile(udpPath);
-        if (udpFile.is_open()) {
+        if (udpFile.is_open()) 
+        {
             string line;
             getline(udpFile, line); // Skip the header line
-            while (getline(udpFile, line)) {
+            while (getline(udpFile, line)) 
+            {
                 istringstream iss(line);
                 string token;
                 vector<string> tokens;
-                while (iss >> token) {
+                while (iss >> token) 
+                {
                     tokens.push_back(token);
                 }
 
-                if (tokens.size() >= 10) {
+                if (tokens.size() >= 10) 
+                {
                     string localAddress = tokens[1];
                     size_t colonPos = localAddress.find(':');
                     string ipHex = localAddress.substr(0, colonPos);
@@ -430,7 +479,9 @@ string execUsedPorts(vector<int> pids)
                 }
             }
             udpFile.close();
-        } else {
+        } 
+        else 
+        {
             cerr << "Failed to open " << udpPath << endl;
             resp += "No UDP port Present\n";
         }
@@ -439,43 +490,74 @@ string execUsedPorts(vector<int> pids)
     return resp;
 }
 
-// Function to get the executable path of a process by PID
-string getExecutablePath(int pid) {
+/*********************************************************************
+ * @fn      		  - getExecutablePath()
+ * @brief             - This function is used to get the executablePath 
+ *                      of process associated with a PID
+ * @param[in]         - int pid
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
+string getExecutablePath(int pid) 
+{
     char path[PATH_MAX];
     string exePath = "/proc/" + to_string(pid) + "/exe";
     ssize_t len = readlink(exePath.c_str(), path, sizeof(path) - 1);
-    if (len != -1) {
+    if (len != -1) 
+    {
         path[len] = '\0';
         return string(path);
-    } else {
+    } 
+    else 
+    {
         cerr << "Failed to get executable path for PID " << pid << endl;
         return "";
     }
 }
 
-// Function to start a process by executable path
-bool startProcess(const string& executablePath) {
+/*********************************************************************
+ * @fn      		  - startProcess()
+ * @brief             - This function is used to Start the process associated with a executablePath
+ * @param[in]         - const string& executablePath
+ * @return            - bool
+ * @Note              -
+ *********************************************************************/
+bool startProcess(const string& executablePath) 
+{
     int result = system((executablePath + " &").c_str()); // Run in background
-    if (result == 0) {
+    if (result == 0) 
+    {
         cout << "Successfully restarted process: " << executablePath << endl;
         return true;
-    } else {
+    } 
+    else 
+    {
         cerr << "Failed to restart process: " << executablePath << endl;
         return false;
     }
 }
 
-string execRestartProcess(vector<int> pids) {
+/*********************************************************************
+ * @fn      		  - execRestartProcess()
+ * @brief             - This function is used to restart the process associated with a PID
+ * @param[in]         - vector<int> pids
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
+string execRestartProcess(vector<int> pids) 
+{
     string resp = msgStr[MSG_INVALID];
     for(int pid : pids)
     {
         string executablePath = getExecutablePath(pid);
-        if (executablePath.empty()) {
+        if (executablePath.empty()) 
+        {
             resp += "PID[" + to_string(pid) + "] :Restart not allowed\n";
             continue;
         }
 
-        if (kill(pid, SIGTERM) == 0) {
+        if (kill(pid, SIGTERM) == 0) 
+        {
             // Wait for the process to terminate
             sleep(2); // Adjust the delay as needed
             if(startProcess(executablePath))
@@ -487,20 +569,32 @@ string execRestartProcess(vector<int> pids) {
     return resp;
 }
 
-string execkillProcess(vector<int> pids) {
+/*********************************************************************
+ * @fn      		  - execkillProcess()
+ * @brief             - This function is used to kill process associated with a PID
+ * @param[in]         - vector<int> pids
+ * @return            - string
+ * @Note              -
+ *********************************************************************/
+string execkillProcess(vector<int> pids) 
+{
     string resp = msgStr[MSG_INVALID];
     for(int pid : pids)
     {
-        if (kill(pid, SIGTERM) == 0) {
+        if (kill(pid, SIGTERM) == 0) 
+        {
             cout << "Successfully sent signal " << SIGTERM << " to PID " << pid << endl;
             resp += "Successfully Killed PID[" + to_string(pid) + "]\n";
-        } else {
+        } 
+        else 
+        {
             cerr << "Failed to send signal " << SIGTERM << " to PID " << pid << endl;
             resp += "Failed to Killed PID[" + to_string(pid) + "]\n";
         }
     }
     return resp;
 }
+
 /*********************************************************************
  * @fn      		  - prepareAndTx()
  * @brief             - This function prepares the response according to 
@@ -514,7 +608,7 @@ void prepareAndTx(int clientSocket,string resp)
 {
     if(msgStr[MSG_INVALID] == resp)
     {
-        cout << "No Responce " << endl;
+//        cout << "No Responce " << endl;
     }
 
     for(size_t i = 0; i < resp.length(); i += MESSAGE_SIZE) 
@@ -530,5 +624,4 @@ void prepareAndTx(int clientSocket,string resp)
     MessageHeader endout;
     endout.setResponse(APPTYPE_SERVER, MSG_TYPE_END_OF_RESPONSE,clientSocket,-1, msgStr[MSG_INVALID]);
     responseDeque.push_back(endout);
-
 }

@@ -217,6 +217,34 @@ void MessageHeader::printResponse()
 }
 
 /*********************************************************************
+ * @fn      		  - printHelp()
+ * @brief             - This function used to print the HELP for user
+ * @param[in]         - none
+ * @return            - none
+ * @Note              -
+ *********************************************************************/
+void MessageHeader::printHelp()
+{
+    // Print header for commands
+    std::cout << "Commands:\n";
+
+    // Set the width for the command string and the description to align them
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_PROCESS] 
+              << " - To get the list of running processes on server\n";
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_MEMORY] 
+              << " <option> <Process name || Process ID> - To get the memory usage information of a specific running process on the server\n";
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_CPU_USAGE] 
+              << " <option> <Process name || Process ID> - To get the CPU usage information of a specific running process on the server\n";
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_PORT_USED] 
+              << " <option> <Process name || Process ID> - To get the port usage information of a specific running process on the server\n";
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_KILL_PROCESS] 
+              << " <option> <Process name || Process ID> - To kill the specific running process on the server\n";
+    std::cout << std::left << std::setw(25) << cmdStr[CMD_RESTART_PROCESS] 
+              << " <option> <Process name> - To restart the process on the server\n";
+}
+
+
+/*********************************************************************
  * @fn      		  - processIdentifier()
  * @brief             - This function used to identify the detail of process name
  *                      whether that is process name or if process id and set the value of 
@@ -304,7 +332,7 @@ bool MessageHeader::parseArgumentAndPrepareCommand(const vector<string> &args)
     }
     else
     {
-        cout << "Invalid command, please provide command such as get-[process, meminfo, cpuinfo, kill] along with either pid or processname\n";
+        printHelp();
     }
 
     return returnStatus;

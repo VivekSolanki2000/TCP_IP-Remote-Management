@@ -1,5 +1,3 @@
-
-
 #include "NetworkValidator.hh"
 #include <thread>
 #include "MessageHandle.hh"

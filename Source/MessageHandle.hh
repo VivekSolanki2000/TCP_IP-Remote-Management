@@ -20,6 +20,7 @@
     ARG(CMD_GET_PORT_USED,"get-ports-used")                             \
     ARG(CMD_KILL_PROCESS,"kill")                                        \
     ARG(CMD_RESTART_PROCESS,"restart-process")                          \
+    ARG(CMD_HELP,"help")                                                \
     ARG(CMD_EXIT,"exit")                                                \
 
 
@@ -81,6 +82,7 @@ public:
 
     void printHeader();
     void printResponse();
+    void printHelp();
 
     void MessageHeartBeat(appType_e app);
     string getProcessName();

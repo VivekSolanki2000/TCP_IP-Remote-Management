@@ -3,6 +3,8 @@
 #include "RemoteManagement.hh"
 #include "NetworkValidator.hh"
 extern appType_e appType;
+
+
 int main(int argc, char *argv[])
 {
     // To start application must receive the parameter to define behaviour of application as it can act as either server or client.

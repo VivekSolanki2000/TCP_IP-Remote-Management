@@ -363,6 +363,10 @@ void sendRequest(int iSocketId)
 
             //responseToBeSent.printResponse();
             send(iSocketId, &requestToBeSent, sizeof(requestToBeSent), 0);
+            if(requestToBeSent.getMsgType() != MSG_HEARTBEAT)
+            {
+                cout << endl;
+            }
         }
     }
 }
@@ -389,6 +393,12 @@ void receiveResponse(int iSocketId)
         {
             // Process the received message
             incomingMessage.printResponse();
+        }
+
+        if(MSG_TYPE_END_OF_RESPONSE == incomingMessage.getMsgType())
+        {
+            cout << CMDPROMPT;
+            cout.flush();    
         }
     }
 }
