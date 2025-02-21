@@ -226,21 +226,21 @@ void MessageHeader::printResponse()
 void MessageHeader::printHelp()
 {
     // Print header for commands
-    std::cout << "Commands:\n";
+     cout << "Commands:\n";
 
     // Set the width for the command string and the description to align them
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_PROCESS] 
+     cout << left << setw(25) << cmdStr[CMD_GET_PROCESS] 
               << " - To get the list of running processes on server\n";
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_MEMORY] 
-              << " <option> <Process name || Process ID> - To get the memory usage information of a specific running process on the server\n";
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_CPU_USAGE] 
-              << " <option> <Process name || Process ID> - To get the CPU usage information of a specific running process on the server\n";
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_GET_PORT_USED] 
-              << " <option> <Process name || Process ID> - To get the port usage information of a specific running process on the server\n";
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_KILL_PROCESS] 
-              << " <option> <Process name || Process ID> - To kill the specific running process on the server\n";
-    std::cout << std::left << std::setw(25) << cmdStr[CMD_RESTART_PROCESS] 
-              << " <option> <Process name> - To restart the process on the server\n";
+     cout << left << setw(25) << cmdStr[CMD_GET_MEMORY] 
+              << " <Process name || Process ID> - To get the memory usage information of a specific running process on the server\n";
+     cout <<  left <<  setw(25) << cmdStr[CMD_GET_CPU_USAGE] 
+              << " <Process name || Process ID> - To get the CPU usage information of a specific running process on the server\n";
+     cout <<  left <<  setw(25) << cmdStr[CMD_GET_PORT_USED] 
+              << " <Process name || Process ID> - To get the port usage information of a specific running process on the server\n";
+     cout <<  left <<  setw(25) << cmdStr[CMD_KILL_PROCESS] 
+              << " <Process name || Process ID> - To kill the specific running process on the server\n";
+     cout <<  left <<  setw(25) << cmdStr[CMD_RESTART_PROCESS] 
+              << " <Process name> || Process ID> - To restart the process on the server\n";
 }
 
 
