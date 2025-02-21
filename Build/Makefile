@@ -1,5 +1,6 @@
 CXX = g++
-CXXFLAGS = -Wall -pthread -std=c++17
+CXXFLAGS = -Wall -std=c++17
+LDFLAGS = -pthread
 
 # Directories
 SRCDIR = ../Source
@@ -12,11 +13,11 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
 
 # Main target
 $(TARGET): $(OBJS)
-	$(CXX) $(OBJS) -o $(TARGET) $(CXXFLAGS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
 # Pattern rule for object files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CXX) -c $< -o $@ $(CXXFLAGS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean rule
 clean:
