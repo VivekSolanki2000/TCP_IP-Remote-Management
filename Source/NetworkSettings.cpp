@@ -42,12 +42,15 @@ void NetworkSettings::handleClient(int clientSocket)
         int bytesReceived = recv(clientSocket, &incomingMessage, sizeof(incomingMessage), 0);
         // Check for timeout or error
         if (bytesReceived <= 0) {  
+#ifdef DEBUG
             cerr << "Connection Close by Client\n";
+#endif
             close(clientSocket);  // Close client socket
             return;  // Exit the function
         }
-
-        //incomingMessage.printHeader();
+#ifdef DEBUG
+        incomingMessage.printHeader();
+#endif
         executeCmd(clientSocket, incomingMessage);
     }
     
@@ -67,13 +70,17 @@ bool NetworkSettings::initializeAsServer()
     int opt = 1;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
+#ifdef DEBUG 
         cerr << "Socket creation failed" << endl;
+#endif
         return false;
     }
 
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
     {
+#ifdef DEBUG 
         cerr << "Setsockopt failed" << endl;
+#endif        
         return false;
     }
 
@@ -83,18 +90,22 @@ bool NetworkSettings::initializeAsServer()
 
     if (bind(sock, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
+#ifdef DEBUG 
         cerr << "Bind failed" << endl;
+#endif
         return false;
     }
 
     if (listen(sock, 10) < 0)
     {
+#ifdef DEBUG
         cerr << "Listen failed" << endl;
+#endif
         return false;
     }
-
+#ifdef DEBUG
     cout << "Server listening on port " << PORT << endl;
-
+#endif
     return true;
 }
 
@@ -116,11 +127,14 @@ void NetworkSettings::runServer()
         int clientSocket = accept(sock, (struct sockaddr *)&address, (socklen_t *)&addrlen);
         if (clientSocket < 0)
         {
-            cerr << "Accept failed" << endl;
+#ifdef DEBUG
+        cerr << "Accept failed" << endl;
+#endif
             continue;
         }
-
+#ifdef DEBUG
         cout << "New client connected: " << clientSocket << endl;
+#endif
         // NOTE: emplace_back constructs the new element in place using the arguments provided. This avoids the extra copy or move operation required when using push_back.
         clientThreads.emplace_back(&NetworkSettings::handleClient, this, clientSocket);
         

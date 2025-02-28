@@ -159,6 +159,7 @@ void MessageHeader::setMessageHandlerInfo(string msg)
  *********************************************************************/
 void MessageHeader::printHeader()
 {
+
     cout << "selfInfo: " << this->selfInfo << endl;
     cout << "msgType: " << this->msgType << endl;
     cout << "command: " << this->command << endl;

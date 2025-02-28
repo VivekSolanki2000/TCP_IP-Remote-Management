@@ -103,7 +103,9 @@ string execGetProcess()
     DIR* proc_dir = opendir("/proc");
     string resp = msgStr[MSG_INVALID];
     if (!proc_dir) {
+#ifdef DEBUG    
         cerr << "Failed to open /proc directory." << endl;
+#endif
         resp += "No process available\n";
         return resp;
     }
@@ -150,7 +152,9 @@ string execGetMemoryUsage(vector<int> pids)
         
         if (!status_file.is_open()) 
         {
+#ifdef DEBUG
             cerr << "Process with PID " << pid << " not found or access denied" << endl;
+#endif
             resp += "Process with PID" + to_string(pid) + " not found or access denied\n";
             continue;
         }
@@ -172,30 +176,39 @@ string execGetMemoryUsage(vector<int> pids)
             }
         }
         resp += "Memory usage for PID " + to_string(pid) + ":\n";
+#ifdef DEBUG
         cout << "Memory usage for PID " << pid << ":" << endl;
+#endif
         if (vm_rss != -1) 
         {
             resp += "Physical Memory (VmRSS): " + to_string(vm_rss) + " KB (" + to_string(vm_rss / 1024.0) + " MB)\n";
+#ifdef DEBUG
             cout << "Physical Memory (VmRSS): " << vm_rss << " KB (" 
                 << vm_rss / 1024.0 << " MB)" << endl;
+#endif   
         } 
         else 
         {
             resp += "VmRSS information not available\n";
+#ifdef DEBUG
             cout << "VmRSS information not available" << endl;
+#endif
         }
 
         if (vm_size != -1) 
         {
             resp += "Virtual Memory (VmSize): " + to_string(vm_size) + " KB (" + to_string(vm_size / 1024.0) + " MB)\n";
+#ifdef DEBUG            
             cout << "Virtual Memory (VmSize): " << vm_size << " KB (" 
                 << vm_size / 1024.0 << " MB)" << endl;
-
+#endif
         } 
         else 
         {
             resp += "VmSize information not available\n";
+#ifdef DEBUG
             cout << "VmSize information not available" << endl;
+#endif
         }
         resp += "\n\0";
     }
@@ -217,7 +230,9 @@ vector<int> getPIDsByName(const string& processName)
     DIR* dir = opendir("/proc");
     if (!dir) 
     {
+#ifdef DEBUG
         cerr << "Failed to open /proc directory." << endl;
+#endif
         return pids;
     }
 
@@ -267,7 +282,9 @@ string execgetCPUUsage(vector<int> pids)
 
         if (!statFile.is_open()) 
         {
+#ifdef DEBUG
             cerr << "Failed to open /proc/" << pid << "/stat. Process may not exist or access denied." << endl;
+#endif
             resp += "PID[" + to_string(pid) + "]: Process may not exist or access denied.\n";
             continue;
         }
@@ -394,8 +411,9 @@ string execUsedPorts(vector<int> pids)
     {
         string tcpPath = "/proc/" + to_string(pid) + "/net/tcp";
         string udpPath = "/proc/" + to_string(pid) + "/net/udp";
-
+#ifdef DEBUG
         cout << "Used ports for PID " << pid << ":" << endl;
+#endif
         resp += "Used ports for PID " + to_string(pid) + ":\n";
         // Read TCP ports
         ifstream tcpFile(tcpPath);
@@ -422,8 +440,9 @@ string execUsedPorts(vector<int> pids)
 
                     string ip = hexToIP(ipHex);
                     int port = hexToPort(portHex);
-
+#ifdef DEBUG
                     cout << "TCP: " << ip << ":" << port << endl;
+#endif
                     resp += "TCP: " + ip + ":" + to_string(port) + "\n";
                 }
             }
@@ -431,7 +450,9 @@ string execUsedPorts(vector<int> pids)
         }
         else 
         {
+#ifdef DEBUG
             cerr << "Failed to open " << tcpPath << endl;
+#endif
             resp += "No TCP port Present\n";
         }
 
@@ -460,8 +481,9 @@ string execUsedPorts(vector<int> pids)
 
                     string ip = hexToIP(ipHex);
                     int port = hexToPort(portHex);
-
+#ifdef DEBUG
                     cout << "UDP: " << ip << ":" << port << endl;
+#endif
                     resp += "UDP: " + ip + ":" + to_string(port) + "\n";
                 }
             }
@@ -469,7 +491,9 @@ string execUsedPorts(vector<int> pids)
         } 
         else 
         {
+#ifdef DEBUG
             cerr << "Failed to open " << udpPath << endl;
+#endif
             resp += "No UDP port Present\n";
         }
         resp += "\n";
@@ -497,7 +521,9 @@ string getExecutablePath(int pid)
     } 
     else 
     {
+#ifdef DEBUG
         cerr << "Failed to get executable path for PID " << pid << endl;
+#endif
         return "";
     }
 }
@@ -514,12 +540,16 @@ bool startProcess(const string& executablePath)
     int result = system((executablePath + " &").c_str()); // Run in background
     if (result == 0) 
     {
+#ifdef DEBUG
         cout << "Successfully restarted process: " << executablePath << endl;
+#endif
         return true;
     } 
     else 
     {
+#ifdef DEBUG
         cerr << "Failed to restart process: " << executablePath << endl;
+#endif
         return false;
     }
 }
@@ -570,12 +600,16 @@ string execkillProcess(vector<int> pids)
     {
         if (kill(pid, SIGTERM) == 0) 
         {
+#ifdef DEBUG
             cout << "Successfully sent signal " << SIGTERM << " to PID " << pid << endl;
+#endif
             resp += "Successfully Killed PID[" + to_string(pid) + "]\n";
         } 
         else 
         {
+#ifdef DEBUG
             cerr << "Failed to send signal " << SIGTERM << " to PID " << pid << endl;
+ #endif
             resp += "Failed to Killed PID[" + to_string(pid) + "]\n";
         }
     }
